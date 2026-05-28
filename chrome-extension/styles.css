@@ -16,6 +16,31 @@ body {
     color: #333;
 }
 
+.header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.github-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #fff;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    background: rgba(255, 255, 255, 0.15);
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: background 0.2s;
+}
+
+.github-link:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
 .two-column-layout {
     display: flex;
     gap: 20px;
