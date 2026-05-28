@@ -1,0 +1,38 @@
+name: Release Chrome Extension
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: |
+          npm init -y
+          npm install -g chrome-webstore-upload-cli
+
+      - name: Build extension (zip)
+        run: |
+          cd chrome-extension
+          zip -r ../tiktok-seller-extension.zip . -x "*.git*" -x "*.github*" -x "*.DS_Store"
+          cd ..
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            tiktok-seller-extension.zip
+            chrome-extension/update.xml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

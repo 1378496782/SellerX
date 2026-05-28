@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TikTok Seller 促销管理</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">📦 TikTok 促销管理</h1>
+        
+        <!-- 版本信息 -->
+        <div class="version-section">
+            <span id="versionInfo">版本: 1.0.0</span>
+            <button id="checkUpdateBtn" class="btn btn-small">检查更新</button>
+        </div>
+        
+        <!-- 店铺信息 -->
+        <div class="info-section">
+            <h2>🏪 当前店铺信息</h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="label">国家代码:</span>
+                    <span id="countryCode" class="value">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Seller ID:</span>
+                    <span id="sellerId" class="value">-</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 配置区域 -->
+        <div class="config-section">
+            <h2>⚙️ 配置选项</h2>
+            
+            <div class="form-group">
+                <label for="promotionType">活动类型:</label>
+                <select id="promotionType">
+                    <option value="1">全部活动/券</option>
+                    <option value="2">商家券</option>
+                    <option value="3">运费折扣</option>
+                    <option value="4">商品折扣</option>
+                    <option value="5">限时闪购</option>
+                    <option value="6" selected>赠品活动</option>
+                    <option value="7">多买多省</option>
+                    <option value="8">套装优惠</option>
+                    <option value="9">促销码(旧)</option>
+                    <option value="10">早鸟价</option>
+                    <option value="11">SNS商品折扣</option>
+                    <option value="12">创作者专属</option>
+                    <option value="17">促销码</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="tabs">查询状态:</label>
+                <select id="tabs" multiple>
+                    <option value="2" selected>Ongoing (进行中)</option>
+                    <option value="3" selected>Upcoming (即将开始)</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- 操作按钮 -->
+        <div class="action-section">
+            <button id="queryBtn" class="btn btn-primary">🔍 查询活动</button>
+            <button id="deleteBtn" class="btn btn-danger" disabled>🗑️ 删除活动</button>
+        </div>
+
+        <!-- 活动列表 -->
+        <div class="list-section">
+            <h2>📋 活动列表</h2>
+            <div id="promotionList" class="promotion-list">
+                <p class="empty-text">请先点击"查询活动"按钮</p>
+            </div>
+        </div>
+
+        <!-- 删除结果 -->
+        <div class="result-section" id="resultSection" style="display: none;">
+            <h2>✅ 删除结果</h2>
+            <div id="deleteResult" class="result-content"></div>
+        </div>
+
+        <!-- 加载状态 -->
+        <div id="loading" class="loading" style="display: none;">
+            <div class="spinner"></div>
+            <span>处理中...</span>
+        </div>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>
