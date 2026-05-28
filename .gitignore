@@ -3,6 +3,9 @@
 *.pem
 *.zip
 
+# Old scripts
+old-scripts/
+
 # Dependencies
 node_modules/
 
