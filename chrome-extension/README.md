@@ -1,4 +1,4 @@
-# TikTok Seller 促销活动管理 Chrome 扩展
+# SellerX
 
 Chrome 扩展，用于批量管理和删除 TikTok Seller 店铺的促销活动。
 
