@@ -93,8 +93,8 @@ async function init() {
 // 获取 cookies
 async function getCookies() {
     return new Promise((resolve) => {
-        // 尝试从多个域名获取 cookies
-        const domains = ['.tiktok.com', 'seller-mx.tiktok.com', 'seller-us.tiktok.com'];
+        // 尝试从多个域名获取 cookies（包括 tokopedia）
+        const domains = ['.tiktok.com', '.tokopedia.com', 'seller-mx.tiktok.com', 'seller-us.tiktok.com'];
         let collectedCookies = [];
 
         let completed = 0;
@@ -173,20 +173,27 @@ async function getCurrentPageInfo() {
 
                 // 从 URL 提取国家代码
                 if (currentUrl) {
-                    // 尝试从域名提取
-                    const urlMatch = currentUrl.match(/seller-([a-z]{2})\.tiktok\.com/i);
-                    if (urlMatch) {
-                        countryCode = urlMatch[1].toUpperCase();
-                        console.log('从域名提取国家代码:', countryCode);
+                    // 先尝试 tiktok.com 域名
+                    const tiktokMatch = currentUrl.match(/seller-([a-z]{2})\.tiktok\.com/i);
+                    if (tiktokMatch) {
+                        countryCode = tiktokMatch[1].toUpperCase();
+                        console.log('从 TikTok 域名提取国家代码:', countryCode);
                     }
-
-                    // 尝试从 URL 参数提取
-                    if (!countryCode) {
-                        const params = new URLSearchParams(currentUrl.split('?')[1] || '');
-                        const shopRegion = params.get('shop_region');
-                        if (shopRegion) {
-                            countryCode = shopRegion.toUpperCase();
-                            console.log('从参数提取国家代码:', countryCode);
+                    // 再尝试 tokopedia.com 域名
+                    else {
+                        const tokopediaMatch = currentUrl.match(/seller-([a-z]{2})\.tokopedia\.com/i);
+                        if (tokopediaMatch) {
+                            countryCode = tokopediaMatch[1].toUpperCase();
+                            console.log('从 Tokopedia 域名提取国家代码:', countryCode);
+                        }
+                        // 从 URL 参数提取 shop_region
+                        else {
+                            const params = new URLSearchParams(currentUrl.split('?')[1] || '');
+                            const shopRegion = params.get('shop_region');
+                            if (shopRegion) {
+                                countryCode = shopRegion.toUpperCase();
+                                console.log('从参数提取国家代码:', countryCode);
+                            }
                         }
                     }
                 }
@@ -241,11 +248,20 @@ async function queryPromotions() {
         const tabsSelect = document.getElementById('tabs');
         const tabs = Array.from(tabsSelect.selectedOptions).map(o => parseInt(o.value));
 
-        const baseDomain = 'seller-' + countryCode.toLowerCase() + '.tiktok.com';
+        // 根据国家代码确定域名，ID 地区使用 tokopedia.com，其他地区使用 tiktok.com
+        const isTokopedia = countryCode === 'ID';
+        const baseDomain = isTokopedia
+            ? 'seller-' + countryCode.toLowerCase() + '.tokopedia.com'
+            : 'seller-' + countryCode.toLowerCase() + '.tiktok.com';
         const effectiveSellerId = oecSellerId || sellerId;
 
-        const commonParams = '?locale=en&language=en&oec_seller_id=' + effectiveSellerId +
-            '&seller_id=' + effectiveSellerId + '&aid=4068&app_name=i18n_ecom_shop&fp=verify_mpkwurf6_N8rsXglq_2X88_4Tt8_93Qx_Gp2kBFbZQ5r9&device_platform=web&cookie_enabled=true&screen_width=2560&screen_height=1440&browser_language=zh-CN&browser_platform=MacIntel&browser_name=Mozilla&browser_version=5.0%20%28Macintosh%3B%20Intel%20Mac%20OS%20X%2010_15_7%29%20AppleWebKit%2F537.36%20%28KHTML%2C%20like%20Gecko%29%20Chrome%2F148.0.0.0%20Safari%2F537.36&browser_online=true&timezone_name=Asia%2FShanghai';
+        // 根据是否是 Tokopedia 使用不同的参数
+        const locale = isTokopedia ? 'en-GB' : 'en';
+        const language = isTokopedia ? 'en-GB' : 'en';
+        const timezone = isTokopedia ? 'Asia%2FJakarta' : 'Asia%2FShanghai';
+
+        const commonParams = '?locale=' + locale + '&language=' + language + '&oec_seller_id=' + effectiveSellerId +
+            '&seller_id=' + effectiveSellerId + '&aid=4068&app_name=i18n_ecom_shop&fp=verify_mpkwurf6_N8rsXglq_2X88_4Tt8_93Qx_Gp2kBFbZQ5r9&device_platform=web&cookie_enabled=true&screen_width=2560&screen_height=1440&browser_language=zh-CN&browser_platform=MacIntel&browser_name=Mozilla&browser_version=5.0%20%28Macintosh%3B%20Intel%20Mac%20OS%20X%2010_15_7%29%20AppleWebKit%2F537.36%20%28KHTML%2C%20like%20Gecko%29%20Chrome%2F148.0.0.0%20Safari%2F537.36&browser_online=true&timezone_name=' + timezone;
 
         allPromotions = [];
 
@@ -349,11 +365,20 @@ async function deletePromotions() {
 
     try {
         const promotionType = parseInt(document.getElementById('promotionType').value);
-        const baseDomain = 'seller-' + countryCode.toLowerCase() + '.tiktok.com';
+        // 根据国家代码确定域名，ID 地区使用 tokopedia.com，其他地区使用 tiktok.com
+        const isTokopedia = countryCode === 'ID';
+        const baseDomain = isTokopedia
+            ? 'seller-' + countryCode.toLowerCase() + '.tokopedia.com'
+            : 'seller-' + countryCode.toLowerCase() + '.tiktok.com';
         const effectiveSellerId = oecSellerId || sellerId;
 
-        const commonParams = '?locale=en&language=en&oec_seller_id=' + effectiveSellerId +
-            '&seller_id=' + effectiveSellerId + '&aid=4068&app_name=i18n_ecom_shop&fp=verify_mpkwurf6_N8rsXglq_2X88_4Tt8_93Qx_Gp2kBFbZQ5r9&device_platform=web&cookie_enabled=true&screen_width=2560&screen_height=1440&browser_language=zh-CN&browser_platform=MacIntel&browser_name=Mozilla&browser_version=5.0%20%28Macintosh%3B%20Intel%20Mac%20OS%20X%2010_15_7%29%20AppleWebKit%2F537.36%20%28KHTML%2C%20like%20Gecko%29%20Chrome%2F148.0.0.0%20Safari%2F537.36&browser_online=true&timezone_name=Asia%2FShanghai';
+        // 根据是否是 Tokopedia 使用不同的参数
+        const locale = isTokopedia ? 'en-GB' : 'en';
+        const language = isTokopedia ? 'en-GB' : 'en';
+        const timezone = isTokopedia ? 'Asia%2FJakarta' : 'Asia%2FShanghai';
+
+        const commonParams = '?locale=' + locale + '&language=' + language + '&oec_seller_id=' + effectiveSellerId +
+            '&seller_id=' + effectiveSellerId + '&aid=4068&app_name=i18n_ecom_shop&fp=verify_mpkwurf6_N8rsXglq_2X88_4Tt8_93Qx_Gp2kBFbZQ5r9&device_platform=web&cookie_enabled=true&screen_width=2560&screen_height=1440&browser_language=zh-CN&browser_platform=MacIntel&browser_name=Mozilla&browser_version=5.0%20%28Macintosh%3B%20Intel%20Mac%20OS%20X%2010_15_7%29%20AppleWebKit%2F537.36%20%28KHTML%2C%20like%20Gecko%29%20Chrome%2F148.0.0.0%20Safari%2F537.36&browser_online=true&timezone_name=' + timezone;
 
         const deleteResults = [];
 
