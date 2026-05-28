@@ -50,6 +50,36 @@ const isPromoCodeType = (type) => type === 9 || type === 17;
 // 获取 DisplayType
 const getDisplayType = (pType) => displayTypeMap[pType] || 1;
 
+// 日志函数
+function log(message, type = 'info') {
+    const container = document.getElementById('logContainer');
+
+    // 移除初始的 "等待执行操作..." 提示
+    const emptyText = container.querySelector('.empty-text');
+    if (emptyText) {
+        emptyText.remove();
+    }
+
+    const line = document.createElement('div');
+    line.className = `log-line ${type}`;
+
+    const timestamp = new Date().toLocaleTimeString();
+    line.innerHTML = `<span class="timestamp">[${timestamp}]</span>${escapeHtml(message)}`;
+
+    container.appendChild(line);
+    container.scrollTop = container.scrollHeight;
+
+    // 同时在控制台输出
+    console.log(message);
+}
+
+// 转义 HTML 防止 XSS
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
 // 初始化
 document.addEventListener('DOMContentLoaded', async () => {
     await init();
@@ -73,17 +103,20 @@ async function init() {
 
         // 更新 UI
         document.getElementById('countryCode').textContent = countryCode || '未获取到';
-        document.getElementById('sellerId').textContent = (oecSellerId || sellerId || '未获取到').substring(0, 20) + '...';
+        document.getElementById('sellerId').textContent = oecSellerId || sellerId || '未获取到';
 
         // 检查是否获取到必要信息
         if (!countryCode || (!oecSellerId && !sellerId)) {
-            console.log('警告: 未能获取到所有必要信息');
-            console.log('countryCode:', countryCode);
-            console.log('oecSellerId:', oecSellerId);
-            console.log('sellerId:', sellerId);
+            log('警告: 未能获取到所有必要信息', 'warning');
+            log('countryCode: ' + countryCode, 'warning');
+            log('oecSellerId: ' + oecSellerId, 'warning');
+            log('sellerId: ' + sellerId, 'warning');
+        } else {
+            log('初始化完成', 'success');
         }
 
     } catch (error) {
+        log('初始化失败: ' + error.message, 'error');
         console.error('初始化失败:', error);
     }
 
@@ -96,7 +129,6 @@ async function getCookies() {
         // 尝试从多个域名获取 cookies（包括 tokopedia）
         const domains = ['.tiktok.com', '.tokopedia.com', 'seller-mx.tiktok.com', 'seller-us.tiktok.com'];
         let collectedCookies = [];
-
         let completed = 0;
 
         domains.forEach(domain => {
@@ -124,7 +156,7 @@ async function getCookies() {
 
 // 处理 cookies
 function processCookies(cookieArray) {
-    console.log('获取到的 cookies 数量:', cookieArray.length);
+    log('获取到 ' + cookieArray.length + ' 个 cookies');
 
     if (cookieArray.length > 0) {
         cookies = cookieArray.map(c => c.name + '=' + c.value).join('; ');
@@ -133,7 +165,6 @@ function processCookies(cookieArray) {
         const cookieObj = {};
         cookieArray.forEach(c => {
             cookieObj[c.name] = c.value;
-            console.log('Cookie:', c.name);
         });
 
         // 尝试多种可能的 seller_id cookie 名称
@@ -148,7 +179,7 @@ function processCookies(cookieArray) {
         possibleSellerIds.forEach(key => {
             if (cookieObj[key] && !oecSellerId) {
                 oecSellerId = cookieObj[key];
-                console.log('找到 seller_id:', key, oecSellerId);
+                log('✓ 从 cookie 获取 oec_seller_id: ' + oecSellerId, 'success');
             }
             if (cookieObj[key] && !sellerId) {
                 sellerId = cookieObj[key];
@@ -158,7 +189,7 @@ function processCookies(cookieArray) {
         // 也检查 SHOP_ID
         if (cookieObj['SHOP_ID'] && !sellerId) {
             sellerId = cookieObj['SHOP_ID'];
-            console.log('找到 SHOP_ID:', sellerId);
+            log('✓ 从 cookie 获取 SHOP_ID: ' + sellerId, 'success');
         }
     }
 }
@@ -166,10 +197,10 @@ function processCookies(cookieArray) {
 // 获取当前页面信息
 async function getCurrentPageInfo() {
     return new Promise((resolve) => {
-        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-            if (tabs && tabs[0]) {
-                const currentUrl = tabs[0].url;
-                console.log('当前页面 URL:', currentUrl);
+        chrome.runtime.sendMessage({ action: 'getCurrentTab' }, (response) => {
+            if (response && response.success && response.tab) {
+                const currentUrl = response.tab.url;
+                log('当前页面 URL: ' + currentUrl);
 
                 // 从 URL 提取国家代码
                 if (currentUrl) {
@@ -177,14 +208,14 @@ async function getCurrentPageInfo() {
                     const tiktokMatch = currentUrl.match(/seller-([a-z]{2})\.tiktok\.com/i);
                     if (tiktokMatch) {
                         countryCode = tiktokMatch[1].toUpperCase();
-                        console.log('从 TikTok 域名提取国家代码:', countryCode);
+                        log('✓ 从 TikTok 域名获取国家代码: ' + countryCode, 'success');
                     }
                     // 再尝试 tokopedia.com 域名
                     else {
                         const tokopediaMatch = currentUrl.match(/seller-([a-z]{2})\.tokopedia\.com/i);
                         if (tokopediaMatch) {
                             countryCode = tokopediaMatch[1].toUpperCase();
-                            console.log('从 Tokopedia 域名提取国家代码:', countryCode);
+                            log('✓ 从 Tokopedia 域名获取国家代码: ' + countryCode, 'success');
                         }
                         // 从 URL 参数提取 shop_region
                         else {
@@ -192,11 +223,20 @@ async function getCurrentPageInfo() {
                             const shopRegion = params.get('shop_region');
                             if (shopRegion) {
                                 countryCode = shopRegion.toUpperCase();
-                                console.log('从参数提取国家代码:', countryCode);
+                                log('✓ 从 URL 参数获取国家代码: ' + countryCode, 'success');
                             }
                         }
                     }
                 }
+            } else {
+                log('获取原标签页失败，尝试当前窗口...', 'warning');
+                // 备用方案：尝试查询当前窗口的活动标签
+                chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+                    if (tabs && tabs[0]) {
+                        const currentUrl = tabs[0].url;
+                        log('当前活动页面 URL: ' + currentUrl);
+                    }
+                });
             }
             resolve();
         });
@@ -225,6 +265,7 @@ async function checkForUpdates() {
         alert(`当前版本: ${currentVersion}\n\n如需更新，请访问 GitHub Releases 页面。\n\n注意：Chrome 扩展的自动更新需要：\n1. 将扩展打包并签名\n2. 配置正确的 update_url\n3. 发布到 GitHub Releases`);
 
     } catch (error) {
+        log('检查更新失败: ' + error.message, 'error');
         console.error('检查更新失败:', error);
         alert('检查更新失败: ' + error.message);
     }
@@ -236,6 +277,7 @@ async function checkForUpdates() {
 // 查询促销活动
 async function queryPromotions() {
     if (!countryCode || (!oecSellerId && !sellerId)) {
+        log('错误: 请确保已登录 TikTok Seller 并在促销活动页面', 'error');
         alert('请确保已登录 TikTok Seller 并在促销活动页面');
         return;
     }
@@ -255,6 +297,17 @@ async function queryPromotions() {
             : 'seller-' + countryCode.toLowerCase() + '.tiktok.com';
         const effectiveSellerId = oecSellerId || sellerId;
 
+        // 输出配置信息
+        log('========================================');
+        log('步骤1: 获取促销活动列表');
+        log('========================================');
+        log('当前查询的活动类型: ' + (promotionType ? promotionType + ' (' + (promotionTypeNames[promotionType] || '未知类型') + ')' : '所有类型'));
+        log('查询的 Tab: ' + tabs.map(t => t + ' (' + (tabNames[t] || '未知') + ')').join(', '));
+        log('是否为券类型: ' + (isVoucherType(promotionType) ? '是' : '否'));
+        log('是否为促销码类型: ' + (isPromoCodeType(promotionType) ? '是' : '否'));
+        log('当前国家: ' + countryCode);
+        log('最终配置 - 国家: ' + countryCode + ', 域名: ' + baseDomain + ', oec_seller_id: ' + effectiveSellerId + ', seller_id: ' + effectiveSellerId);
+
         // 根据是否是 Tokopedia 使用不同的参数
         const locale = isTokopedia ? 'en-GB' : 'en';
         const language = isTokopedia ? 'en-GB' : 'en';
@@ -265,13 +318,25 @@ async function queryPromotions() {
 
         allPromotions = [];
 
+        // 为每个 tab 查询
         for (const tab of tabs) {
+            log('');
+            log('--- 查询 Tab ' + tab + ' (' + (tabNames[tab] || '未知') + ') ---');
+
+            // 动态设置 referer
+            const refererUrl = (function () {
+                if (promotionType) {
+                    return 'https://' + baseDomain + '/promotion/marketing-tools/management?tab=' + tab + '&shop_region=' + countryCode + '&promotion_type=' + promotionType;
+                }
+                return 'https://' + baseDomain + '/promotion/marketing-tools/management?tab=' + tab + '&shop_region=' + countryCode;
+            })();
+
             const headers = {
                 'accept': '*/*',
                 'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,th;q=0.7',
                 'content-type': 'application/json',
                 'origin': 'https://' + baseDomain,
-                'referer': 'https://' + baseDomain + '/promotion/marketing-tools/management?tab=' + tab + '&shop_region=' + countryCode + '&promotion_type=' + promotionType,
+                'referer': refererUrl,
                 'x-tt-oec-region': countryCode,
                 'cookie': cookies
             };
@@ -302,14 +367,27 @@ async function queryPromotions() {
             });
 
             if (response.success) {
+                log('列表请求状态: 成功', 'success');
+                log('x-tt-logid: ' + (response.logId || 'N/A'));
+
                 const promotions = response.data.data?.promotions || [];
-                promotions.forEach(p => {
+                log('Tab ' + tab + ' 找到 ' + promotions.length + ' 个促销活动:');
+
+                promotions.forEach((p, idx) => {
                     p.fromTab = tab;
                     p.realPromotionType = p.promotion_type;
+                    allPromotions.push(p);
+                    log('  ' + (idx + 1) + '. ID: ' + p.id + ', 名称: ' + (p.name || 'N/A') + ', 状态: ' + (p.status || 'N/A') + ', 类型: ' + (p.promotion_type || 'N/A') + '(' + (promotionTypeNames[p.promotion_type] || '未知') + '), Tab: ' + tab);
                 });
-                allPromotions = allPromotions.concat(promotions);
+            } else {
+                log('列表请求失败: ' + (response.error || '未知错误'), 'error');
             }
         }
+
+        log('');
+        log('========================================');
+        log('共找到 ' + allPromotions.length + ' 个促销活动 (Tab ' + tabs.join(', ') + ')');
+        log('========================================');
 
         // 更新列表显示
         updatePromotionList();
@@ -318,6 +396,7 @@ async function queryPromotions() {
         document.getElementById('deleteBtn').disabled = allPromotions.length === 0;
 
     } catch (error) {
+        log('查询失败: ' + error.message, 'error');
         console.error('查询失败:', error);
         alert('查询失败: ' + error.message);
     }
@@ -355,9 +434,13 @@ function updatePromotionList() {
 
 // 删除促销活动
 async function deletePromotions() {
-    if (allPromotions.length === 0) return;
+    if (allPromotions.length === 0) {
+        log('没有可删除的活动', 'warning');
+        return;
+    }
 
     if (!confirm(`确定要删除这 ${allPromotions.length} 个活动吗？`)) {
+        log('用户取消删除操作', 'warning');
         return;
     }
 
@@ -380,53 +463,100 @@ async function deletePromotions() {
         const commonParams = '?locale=' + locale + '&language=' + language + '&oec_seller_id=' + effectiveSellerId +
             '&seller_id=' + effectiveSellerId + '&aid=4068&app_name=i18n_ecom_shop&fp=verify_mpkwurf6_N8rsXglq_2X88_4Tt8_93Qx_Gp2kBFbZQ5r9&device_platform=web&cookie_enabled=true&screen_width=2560&screen_height=1440&browser_language=zh-CN&browser_platform=MacIntel&browser_name=Mozilla&browser_version=5.0%20%28Macintosh%3B%20Intel%20Mac%20OS%20X%2010_15_7%29%20AppleWebKit%2F537.36%20%28KHTML%2C%20like%20Gecko%29%20Chrome%2F148.0.0.0%20Safari%2F537.36&browser_online=true&timezone_name=' + timezone;
 
+        log('');
+        log('========================================');
+        log('步骤2: 开始删除');
+        log('========================================');
+
         const deleteResults = [];
 
         for (let i = 0; i < allPromotions.length; i++) {
             const promotion = allPromotions[i];
             const actualType = promotion.realPromotionType || promotionType;
 
-            // 获取删除接口
-            let destroyUrl = 'https://' + baseDomain + '/api/v1/promotion/destroy' + commonParams;
-            let requestBody = { promotion_id: promotion.id };
-            let destroyType = '活动';
+            try {
+                // 获取删除接口 URL
+                let destroyUrl = 'https://' + baseDomain + '/api/v1/promotion/destroy' + commonParams;
+                let destroyRequestBody = { promotion_id: promotion.id };
+                let destroyType = '活动';
 
-            if (isVoucherType(actualType)) {
-                destroyUrl = 'https://' + baseDomain + '/api/v1/promotion/voucher/destroy' + commonParams;
-                requestBody = { voucher_type_id: promotion.id };
-                destroyType = '券';
-            } else if (isPromoCodeType(actualType)) {
-                destroyUrl = 'https://' + baseDomain + '/api/v1/promotion/promo_code/delete' + commonParams;
-                requestBody = { promo_code_id: promotion.id };
-                destroyType = '促销码';
+                if (isVoucherType(actualType)) {
+                    destroyUrl = 'https://' + baseDomain + '/api/v1/promotion/voucher/destroy' + commonParams;
+                    destroyRequestBody = { voucher_type_id: promotion.id };
+                    destroyType = '券';
+                } else if (isPromoCodeType(actualType)) {
+                    destroyUrl = 'https://' + baseDomain + '/api/v1/promotion/promo_code/delete' + commonParams;
+                    destroyRequestBody = { promo_code_id: promotion.id };
+                    destroyType = '促销码';
+                }
+
+                // 动态设置 referer
+                const refererUrl = (function () {
+                    if (promotionType) {
+                        return 'https://' + baseDomain + '/promotion/marketing-tools/management?tab=' + promotion.fromTab + '&shop_region=' + countryCode + '&promotion_type=' + promotionType;
+                    }
+                    return 'https://' + baseDomain + '/promotion/marketing-tools/management?tab=' + promotion.fromTab + '&shop_region=' + countryCode;
+                })();
+
+                const headers = {
+                    'accept': '*/*',
+                    'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,th;q=0.7',
+                    'content-type': 'application/json',
+                    'origin': 'https://' + baseDomain,
+                    'referer': refererUrl,
+                    'x-tt-oec-region': countryCode,
+                    'cookie': cookies
+                };
+
+                const response = await chrome.runtime.sendMessage({
+                    action: 'deletePromotion',
+                    data: { url: destroyUrl, headers, requestBody: destroyRequestBody }
+                });
+
+                const isSuccess = response.success && response.data && response.data.code === 0;
+                const logId = response.logId || 'N/A';
+
+                deleteResults.push({
+                    id: promotion.id,
+                    name: promotion.name,
+                    type: destroyType,
+                    success: isSuccess,
+                    status: response.data,
+                    logId: logId
+                });
+
+                if (isSuccess) {
+                    log('  [' + (i + 1) + '/' + allPromotions.length + '] 删除' + destroyType + ' ID: ' + promotion.id + ', 名称: ' + promotion.name + ' - 成功' + ', logid: ' + logId, 'success');
+                } else {
+                    log('  [' + (i + 1) + '/' + allPromotions.length + '] 删除' + destroyType + ' ID: ' + promotion.id + ', 名称: ' + promotion.name + ' - 失败' + ', logid: ' + logId, 'error');
+                }
+
+            } catch (deleteError) {
+                let destroyType = '活动';
+                if (isVoucherType(actualType)) {
+                    destroyType = '券';
+                } else if (isPromoCodeType(actualType)) {
+                    destroyType = '促销码';
+                }
+                deleteResults.push({
+                    id: promotion.id,
+                    name: promotion.name,
+                    type: destroyType,
+                    success: false,
+                    error: deleteError.message
+                });
+                log('  [' + (i + 1) + '/' + allPromotions.length + '] 删除' + destroyType + ' ID: ' + promotion.id + ', 名称: ' + promotion.name + ' - 失败: ' + deleteError.message, 'error');
             }
-
-            const headers = {
-                'accept': '*/*',
-                'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,th;q=0.7',
-                'content-type': 'application/json',
-                'origin': 'https://' + baseDomain,
-                'referer': 'https://' + baseDomain + '/promotion/marketing-tools/management?tab=' + promotion.fromTab + '&shop_region=' + countryCode + '&promotion_type=' + promotionType,
-                'x-tt-oec-region': countryCode,
-                'cookie': cookies
-            };
-
-            const response = await chrome.runtime.sendMessage({
-                action: 'deletePromotion',
-                data: { url: destroyUrl, headers, requestBody }
-            });
-
-            const isSuccess = response.success && response.data.code === 0;
-
-            deleteResults.push({
-                id: promotion.id,
-                name: promotion.name,
-                type: destroyType,
-                success: isSuccess,
-                logId: response.logId || 'N/A',
-                error: response.error
-            });
         }
+
+        const successCount = deleteResults.filter(r => r.success).length;
+        const failCount = deleteResults.length - successCount;
+
+        log('');
+        log('========================================');
+        log('删除完成');
+        log('========================================');
+        log('成功: ' + successCount + ', 失败: ' + failCount);
 
         // 显示结果
         showDeleteResult(deleteResults);
@@ -437,6 +567,7 @@ async function deletePromotions() {
         document.getElementById('deleteBtn').disabled = true;
 
     } catch (error) {
+        log('删除失败: ' + error.message, 'error');
         console.error('删除失败:', error);
         alert('删除失败: ' + error.message);
     }
