@@ -1,0 +1,155 @@
+chrome-extension/manifest.json
+  dc34fedbe8773b8b 3 gitai:{"mixed_line_ranges":[],"operations":[{"operation_id":"6a187580c95247b5d2bf90f8","tool_type":"agent","tool_id":"Write","line_ranges":[{"Single":3}]}]}
+chrome-extension/popup.html
+  dc34fedbe8773b8b 3,7,10,13-14,20,39,97-98 gitai:{"mixed_line_ranges":[],"operations":[{"operation_id":"6a187580c95247b5d2bf90f8","tool_type":"agent","tool_id":"Write","line_ranges":[{"Single":3},{"Single":7},{"Single":10},{"Range":[13,14]},{"Single":20},{"Single":39},{"Range":[97,98]}]}]}
+chrome-extension/README.md
+  dc34fedbe8773b8b 1 gitai:{"mixed_line_ranges":[],"operations":[{"operation_id":"6a187580c95247b5d2bf90f8","tool_type":"agent","tool_id":"Write","line_ranges":[{"Single":1}]}]}
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "5d0327dc7a9e2845a0b2408d0f6d89747369f105",
+  "prompts": {
+    "dc34fedbe8773b8b": {
+      "agent_id": {
+        "tool": "trae",
+        "id": "6a1870c7c95247b5d2bf8fee",
+        "model": "Doubao-Seed-2.0-Code__dev"
+      },
+      "human_author": "zhangfuwei.666 <zhangfuwei.666@bytedance.com>",
+      "messages": [],
+      "total_additions": 11,
+      "total_deletions": 8,
+      "accepted_lines": 11,
+      "overriden_lines": 0
+    }
+  },
+  "attestation_metadata": {
+    "chrome-extension/README.md": [
+      {
+        "hash": "dc34fedbe8773b8b",
+        "line_ranges": [
+          {
+            "Single": 1
+          }
+        ],
+        "mixed_line_ranges": [],
+        "operations": [
+          {
+            "operation_id": "6a187580c95247b5d2bf90f8",
+            "tool_type": "agent",
+            "tool_id": "Write",
+            "line_ranges": [
+              {
+                "Single": 1
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "chrome-extension/manifest.json": [
+      {
+        "hash": "dc34fedbe8773b8b",
+        "line_ranges": [
+          {
+            "Single": 3
+          }
+        ],
+        "mixed_line_ranges": [],
+        "operations": [
+          {
+            "operation_id": "6a187580c95247b5d2bf90f8",
+            "tool_type": "agent",
+            "tool_id": "Write",
+            "line_ranges": [
+              {
+                "Single": 3
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "chrome-extension/popup.html": [
+      {
+        "hash": "dc34fedbe8773b8b",
+        "line_ranges": [
+          {
+            "Single": 3
+          },
+          {
+            "Single": 7
+          },
+          {
+            "Single": 10
+          },
+          {
+            "Range": [
+              13,
+              14
+            ]
+          },
+          {
+            "Single": 20
+          },
+          {
+            "Single": 39
+          },
+          {
+            "Range": [
+              97,
+              98
+            ]
+          }
+        ],
+        "mixed_line_ranges": [],
+        "operations": [
+          {
+            "operation_id": "6a187580c95247b5d2bf90f8",
+            "tool_type": "agent",
+            "tool_id": "Write",
+            "line_ranges": [
+              {
+                "Single": 3
+              },
+              {
+                "Single": 7
+              },
+              {
+                "Single": 10
+              },
+              {
+                "Range": [
+                  13,
+                  14
+                ]
+              },
+              {
+                "Single": 20
+              },
+              {
+                "Single": 39
+              },
+              {
+                "Range": [
+                  97,
+                  98
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "remote_transcripts": {
+    "dc34fedbe8773b8b": {
+      "tool": "trae",
+      "conversation_id": "6a1870c7c95247b5d2bf8fee",
+      "session_id": "6a1870c7c95247b5d2bf8fee",
+      "status": "remote_only",
+      "message": "Remote transcript resolution is not implemented yet for TRAE prompts."
+    }
+  }
+}
