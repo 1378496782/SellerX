@@ -1,0 +1,63 @@
+README.md
+  dc34fedbe8773b8b 1-63 gitai:{"mixed_line_ranges":[],"operations":[{"operation_id":"6a187ba6c95247b5d2bf91f0","tool_type":"agent","tool_id":"Write","line_ranges":[{"Range":[1,63]}]}]}
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "6c5a1a04c252e0c97c8bc6ec00a4b6ec611ce9dd",
+  "prompts": {
+    "dc34fedbe8773b8b": {
+      "agent_id": {
+        "tool": "trae",
+        "id": "6a1870c7c95247b5d2bf8fee",
+        "model": "Doubao-Seed-2.0-Code__dev"
+      },
+      "human_author": "zhangfuwei.666 <zhangfuwei.666@bytedance.com>",
+      "messages": [],
+      "total_additions": 63,
+      "total_deletions": 0,
+      "accepted_lines": 63,
+      "overriden_lines": 0
+    }
+  },
+  "attestation_metadata": {
+    "README.md": [
+      {
+        "hash": "dc34fedbe8773b8b",
+        "line_ranges": [
+          {
+            "Range": [
+              1,
+              63
+            ]
+          }
+        ],
+        "mixed_line_ranges": [],
+        "operations": [
+          {
+            "operation_id": "6a187ba6c95247b5d2bf91f0",
+            "tool_type": "agent",
+            "tool_id": "Write",
+            "line_ranges": [
+              {
+                "Range": [
+                  1,
+                  63
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "remote_transcripts": {
+    "dc34fedbe8773b8b": {
+      "tool": "trae",
+      "conversation_id": "6a1870c7c95247b5d2bf8fee",
+      "session_id": "6a1870c7c95247b5d2bf8fee",
+      "status": "remote_only",
+      "message": "Remote transcript resolution is not implemented yet for TRAE prompts."
+    }
+  }
+}
