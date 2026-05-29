@@ -93,9 +93,7 @@ async function init() {
     try {
         // 默认隐藏右侧面板
         const rightColumn = document.getElementById('rightColumn');
-        const leftColumn = document.querySelector('.left-column');
         rightColumn.classList.add('hidden');
-        leftColumn.classList.add('expanded');
 
         // 显示版本信息
         const manifest = chrome.runtime.getManifest();
@@ -253,16 +251,19 @@ function toggleRightPanel() {
     const rightColumn = document.getElementById('rightColumn');
     const leftColumn = document.querySelector('.left-column');
     const btn = document.getElementById('toggleRightPanelBtn');
+    const body = document.body;
 
     if (rightColumn.classList.contains('hidden')) {
         // 显示面板
         rightColumn.classList.remove('hidden');
-        leftColumn.classList.remove('expanded');
+        leftColumn.classList.add('shrink');
+        body.classList.add('expanded');
         btn.textContent = '📜 隐藏日志';
     } else {
         // 隐藏面板
         rightColumn.classList.add('hidden');
-        leftColumn.classList.add('expanded');
+        leftColumn.classList.remove('shrink');
+        body.classList.remove('expanded');
         btn.textContent = '📜 显示日志';
     }
 }
