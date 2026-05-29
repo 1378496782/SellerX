@@ -47,7 +47,12 @@ jobs:
       - name: Build extension crx
         if: ${{ env.CHROME_EXTENSION_PRIVATE_KEY != '' }}
         run: |
-          chrome --pack-extension="$(pwd)/chrome-extension" --pack-extension-key="$(pwd)/extension.pem"
+          xvfb-run --auto-servernum chrome \
+            --no-sandbox \
+            --disable-gpu \
+            --no-message-box \
+            --pack-extension="$(pwd)/chrome-extension" \
+            --pack-extension-key="$(pwd)/extension.pem"
           mv chrome-extension.crx sellerx-extension.crx
 
       - name: Warn when crx is skipped
