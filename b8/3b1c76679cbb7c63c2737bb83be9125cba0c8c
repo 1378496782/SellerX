@@ -1,0 +1,171 @@
+chrome-extension/popup.js
+  9ad5016702e803d4 130,133-135,137-141,143-151,153-156,158-177,180-184,201-213,217,219,222,226-227 gitai:{"mixed_line_ranges":[],"operations":[{"operation_id":"6a194029c95247b5d2bf9a76","tool_type":"agent","tool_id":"Edit","line_ranges":[{"Single":130},{"Range":[133,135]},{"Range":[137,141]},{"Range":[143,151]},{"Range":[153,156]},{"Range":[158,177]},{"Range":[180,184]},{"Range":[201,213]},{"Single":217},{"Single":219},{"Single":222},{"Range":[226,227]}]}]}
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "b83b1c76679cbb7c63c2737bb83be9125cba0c8c",
+  "prompts": {
+    "9ad5016702e803d4": {
+      "agent_id": {
+        "tool": "trae",
+        "id": "6a191f49c95247b5d2bf9975",
+        "model": "Doubao-Seed-2.0-Code__dev"
+      },
+      "human_author": "zhangfuwei.666 <zhangfuwei.666@bytedance.com>",
+      "messages": [],
+      "total_additions": 120,
+      "total_deletions": 88,
+      "accepted_lines": 67,
+      "overriden_lines": 0
+    }
+  },
+  "attestation_metadata": {
+    "chrome-extension/popup.js": [
+      {
+        "hash": "9ad5016702e803d4",
+        "line_ranges": [
+          {
+            "Single": 130
+          },
+          {
+            "Range": [
+              133,
+              135
+            ]
+          },
+          {
+            "Range": [
+              137,
+              141
+            ]
+          },
+          {
+            "Range": [
+              143,
+              151
+            ]
+          },
+          {
+            "Range": [
+              153,
+              156
+            ]
+          },
+          {
+            "Range": [
+              158,
+              177
+            ]
+          },
+          {
+            "Range": [
+              180,
+              184
+            ]
+          },
+          {
+            "Range": [
+              201,
+              213
+            ]
+          },
+          {
+            "Single": 217
+          },
+          {
+            "Single": 219
+          },
+          {
+            "Single": 222
+          },
+          {
+            "Range": [
+              226,
+              227
+            ]
+          }
+        ],
+        "mixed_line_ranges": [],
+        "operations": [
+          {
+            "operation_id": "6a194029c95247b5d2bf9a76",
+            "tool_type": "agent",
+            "tool_id": "Edit",
+            "line_ranges": [
+              {
+                "Single": 130
+              },
+              {
+                "Range": [
+                  133,
+                  135
+                ]
+              },
+              {
+                "Range": [
+                  137,
+                  141
+                ]
+              },
+              {
+                "Range": [
+                  143,
+                  151
+                ]
+              },
+              {
+                "Range": [
+                  153,
+                  156
+                ]
+              },
+              {
+                "Range": [
+                  158,
+                  177
+                ]
+              },
+              {
+                "Range": [
+                  180,
+                  184
+                ]
+              },
+              {
+                "Range": [
+                  201,
+                  213
+                ]
+              },
+              {
+                "Single": 217
+              },
+              {
+                "Single": 219
+              },
+              {
+                "Single": 222
+              },
+              {
+                "Range": [
+                  226,
+                  227
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "remote_transcripts": {
+    "9ad5016702e803d4": {
+      "tool": "trae",
+      "conversation_id": "6a191f49c95247b5d2bf9975",
+      "session_id": "6a191f49c95247b5d2bf9975",
+      "status": "remote_only",
+      "message": "Remote transcript resolution is not implemented yet for TRAE prompts."
+    }
+  }
+}
