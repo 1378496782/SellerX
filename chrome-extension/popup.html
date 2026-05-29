@@ -80,11 +80,17 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="tabs">查询状态:</label>
-                            <select id="tabs" multiple>
-                                <option value="2" selected>Ongoing (进行中)</option>
-                                <option value="3" selected>Upcoming (即将开始)</option>
-                            </select>
+                            <label>查询状态:</label>
+                            <div class="checkbox-group" id="tabsGroup">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="tab" value="2" checked>
+                                    <span>Ongoing</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="tab" value="3" checked>
+                                    <span>Upcoming</span>
+                                </label>
+                            </div>
                         </div>
                     </div>
                 </div>

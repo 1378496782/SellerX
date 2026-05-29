@@ -475,8 +475,8 @@ async function queryPromotions() {
 
     try {
         const promotionType = parseInt(document.getElementById('promotionType').value);
-        const tabsSelect = document.getElementById('tabs');
-        const tabs = Array.from(tabsSelect.selectedOptions).map(o => parseInt(o.value));
+        const tabsCheckboxes = document.querySelectorAll('#tabsGroup input[type="checkbox"]:checked');
+        const tabs = Array.from(tabsCheckboxes).map(o => parseInt(o.value));
 
         // 根据国家代码确定域名，ID 地区使用 tokopedia.com，其他地区使用 tiktok.com
         const isTokopedia = countryCode === 'ID';

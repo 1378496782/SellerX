@@ -518,3 +518,22 @@ body.expanded {
 .scrollbar::-webkit-scrollbar-thumb:hover {
     background: #999;
 }
+
+.checkbox-group {
+    display: flex;
+    gap: 12px;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    font-size: 12px;
+    color: #333;
+    cursor: pointer;
+    user-select: none;
+}
+
+.checkbox-label input[type="checkbox"] {
+    margin-right: 6px;
+    cursor: pointer;
+}
