@@ -627,11 +627,6 @@ async function deletePromotions() {
         return;
     }
 
-    if (!confirm(`确定要删除这 ${allPromotions.length} 个活动吗？`)) {
-        log('用户取消删除操作', 'warning');
-        return;
-    }
-
     showLoading(true);
 
     try {
