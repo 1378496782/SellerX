@@ -83,6 +83,26 @@ function getDeleteRequestConfig(baseDomain, commonParams, promotion, actualType)
     };
 }
 
+function describeResponseError(response) {
+    if (!response) {
+        return '无响应';
+    }
+
+    const parts = [];
+    if (response.errorType) {
+        parts.push(response.errorType);
+    }
+    if (response.status) {
+        parts.push('HTTP ' + response.status);
+    }
+    if (response.apiCode !== undefined && response.apiCode !== 0) {
+        parts.push('API code ' + response.apiCode);
+    }
+
+    const message = response.error || response.apiMessage || response.data?.message || response.data?.msg || '未知错误';
+    return parts.length ? parts.join(' / ') + ': ' + message : message;
+}
+
 export function canRunPromotionAction() {
     return Boolean(appState.countryCode && getEffectiveSellerId());
 }
@@ -119,7 +139,7 @@ export async function queryPromotions({ promotionType, tabs, log }) {
             requestBody
         });
 
-        if (response.success) {
+        if (response.success && (!response.apiCode || response.apiCode === 0)) {
             log('列表请求状态: 成功', 'success');
             log('x-tt-logid: ' + (response.logId || 'N/A'));
 
@@ -133,7 +153,8 @@ export async function queryPromotions({ promotionType, tabs, log }) {
                 log('  ' + (index + 1) + '. ID: ' + promotion.id + ', 名称: ' + (promotion.name || 'N/A') + ', 状态: ' + (promotion.status || 'N/A') + ', 类型: ' + (promotion.promotion_type || 'N/A') + '(' + (promotionTypeNames[promotion.promotion_type] || '未知') + '), Tab: ' + tab);
             });
         } else {
-            log('列表请求失败: ' + (response.error || '未知错误'), 'error');
+            log('列表请求失败: ' + describeResponseError(response), 'error');
+            log('x-tt-logid: ' + (response?.logId || 'N/A'), 'error');
         }
     }
 
@@ -176,6 +197,7 @@ export async function deletePromotions({ promotionType, log }) {
 
             const isSuccess = response.success && response.data && response.data.code === 0;
             const logId = response.logId || 'N/A';
+            const errorMessage = isSuccess ? '' : describeResponseError(response);
 
             deleteResults.push({
                 id: promotion.id,
@@ -183,13 +205,14 @@ export async function deletePromotions({ promotionType, log }) {
                 type: deleteConfig.destroyType,
                 success: isSuccess,
                 status: response.data,
-                logId
+                logId,
+                error: errorMessage
             });
 
             if (isSuccess) {
                 log('  [' + (index + 1) + '/' + appState.allPromotions.length + '] 删除' + deleteConfig.destroyType + ' ID: ' + promotion.id + ', 名称: ' + promotion.name + ' - 成功' + ', logid: ' + logId, 'success');
             } else {
-                log('  [' + (index + 1) + '/' + appState.allPromotions.length + '] 删除' + deleteConfig.destroyType + ' ID: ' + promotion.id + ', 名称: ' + promotion.name + ' - 失败' + ', logid: ' + logId, 'error');
+                log('  [' + (index + 1) + '/' + appState.allPromotions.length + '] 删除' + deleteConfig.destroyType + ' ID: ' + promotion.id + ', 名称: ' + promotion.name + ' - 失败: ' + errorMessage + ', logid: ' + logId, 'error');
             }
         } catch (deleteError) {
             let destroyType = '活动';
