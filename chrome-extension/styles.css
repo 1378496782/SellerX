@@ -232,7 +232,7 @@ body.expanded {
 .log-container {
     flex: 1;
     min-height: 450px;
-    max-height: 600px;
+    max-height: 750px;
     overflow-y: auto;
     background: #1a1a2e;
     border-radius: 8px;
