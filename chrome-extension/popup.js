@@ -127,34 +127,61 @@ async function init() {
     showLoading(false);
 }
 
-// 获取 cookies
+// 获取 cookies - 只从当前页面域名获取
 async function getCookies() {
     return new Promise((resolve) => {
-        // 尝试从多个域名获取 cookies（包括 tokopedia）
-        const domains = ['.tiktok.com', '.tokopedia.com', 'seller-mx.tiktok.com', 'seller-us.tiktok.com'];
-        let collectedCookies = [];
-        let completed = 0;
+        // 先获取当前页面信息
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+            let currentDomain = '';
 
-        domains.forEach(domain => {
-            chrome.cookies.getAll({ domain: domain }, (cookieArray) => {
-                completed++;
+            if (tabs && tabs[0] && tabs[0].url) {
+                const url = new URL(tabs[0].url);
+                currentDomain = url.hostname;
+                log('当前页面域名: ' + currentDomain, 'info');
+            }
 
-                if (cookieArray && cookieArray.length > 0) {
-                    collectedCookies = collectedCookies.concat(cookieArray);
+            // 只使用当前页面域名
+            let domains = [];
+            if (currentDomain) {
+                domains.push(currentDomain);
+                // 添加可能的父域名作为后备
+                if (currentDomain.includes('tiktok')) {
+                    domains.push('.tiktok.com');
+                } else if (currentDomain.includes('tokopedia')) {
+                    domains.push('.tokopedia.com');
                 }
+            } else {
+                // 没有当前域名时使用默认列表
+                domains = ['.tiktok.com', '.tokopedia.com'];
+            }
 
-                // 所有域名都查询完了
-                if (completed === domains.length) {
-                    processCookies(collectedCookies);
-                    resolve();
-                }
+            log('Cookie 查询域名: ' + domains.join(', '), 'info');
+
+            let collectedCookies = [];
+            let completed = 0;
+
+            domains.forEach(domain => {
+                chrome.cookies.getAll({ domain: domain }, (cookieArray) => {
+                    completed++;
+
+                    if (cookieArray && cookieArray.length > 0) {
+                        log(`从 ${domain} 获取到 ${cookieArray.length} 个 cookies`, 'info');
+                        collectedCookies = collectedCookies.concat(cookieArray);
+                    }
+
+                    // 所有域名都查询完了
+                    if (completed === domains.length) {
+                        processCookies(collectedCookies);
+                        resolve();
+                    }
+                });
             });
-        });
 
-        // 如果没有域名匹配，直接返回
-        if (domains.length === 0) {
-            resolve();
-        }
+            // 如果没有域名匹配，直接返回
+            if (domains.length === 0) {
+                resolve();
+            }
+        });
     });
 }
 
@@ -171,30 +198,35 @@ function processCookies(cookieArray) {
             cookieObj[c.name] = c.value;
         });
 
-        // 尝试多种可能的 seller_id cookie 名称
+        // 输出所有找到的 cookie 名称（用于调试）
+        const cookieNames = Object.keys(cookieObj).filter(name =>
+            name.toLowerCase().includes('seller') || name.toLowerCase().includes('shop') || name.toLowerCase().includes('id')
+        );
+        if (cookieNames.length > 0) {
+            log('找到相关 Cookie: ' + cookieNames.join(', '), 'info');
+            // 输出具体值
+            cookieNames.forEach(name => {
+                log(`  ${name}: ${cookieObj[name]}`, 'info');
+            });
+        }
+
+        // Seller ID 就是 oec_seller_id（按优先级）
         const possibleSellerIds = [
             'oec_seller_id_unified_seller_env',
             'global_seller_id_unified_seller_env',
+            'oec_seller_id',
             'SELLER_ID',
-            'seller_id',
-            'oec_seller_id'
+            'seller_id'
         ];
 
+        // 按优先级设置 oec_sellerId 和 sellerId
         possibleSellerIds.forEach(key => {
             if (cookieObj[key] && !oecSellerId) {
                 oecSellerId = cookieObj[key];
-                log('✓ 从 cookie 获取 oec_seller_id: ' + oecSellerId, 'success');
-            }
-            if (cookieObj[key] && !sellerId) {
-                sellerId = cookieObj[key];
+                sellerId = oecSellerId; // sellerId 就是 oec_sellerId
+                log('✓ 从 cookie 获取 Seller ID (' + key + '): ' + oecSellerId, 'success');
             }
         });
-
-        // 也检查 SHOP_ID
-        if (cookieObj['SHOP_ID'] && !sellerId) {
-            sellerId = cookieObj['SHOP_ID'];
-            log('✓ 从 cookie 获取 SHOP_ID: ' + sellerId, 'success');
-        }
     }
 }
 
