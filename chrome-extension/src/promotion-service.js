@@ -178,6 +178,7 @@ export async function deletePromotions({ promotionType, log }) {
     log('========================================');
     log('步骤2: 开始删除');
     log('========================================');
+    log('待删除活动数: ' + appState.allPromotions.length);
 
     for (let index = 0; index < appState.allPromotions.length; index++) {
         const promotion = appState.allPromotions[index];
@@ -240,6 +241,14 @@ export async function deletePromotions({ promotionType, log }) {
     log('删除完成');
     log('========================================');
     log('成功: ' + successCount + ', 失败: ' + failCount);
+
+    if (failCount > 0) {
+        const failedIds = deleteResults
+            .filter((result) => !result.success)
+            .map((result) => result.id || 'N/A')
+            .join(', ');
+        log('失败活动 ID: ' + failedIds, 'error');
+    }
 
     clearPromotions();
     return deleteResults;

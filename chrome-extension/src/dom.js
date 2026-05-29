@@ -191,30 +191,102 @@ export function renderPromotionList(promotions) {
     });
 }
 
+function buildDeleteResultText(results) {
+    const successCount = results.filter((result) => result.success).length;
+    const failCount = results.length - successCount;
+    const lines = [
+        `删除结果：成功 ${successCount}，失败 ${failCount}`,
+        ''
+    ];
+
+    results.forEach((result, index) => {
+        lines.push([
+            `${index + 1}. ${result.success ? '成功' : '失败'}`,
+            `ID: ${result.id || 'N/A'}`,
+            `名称: ${result.name || 'N/A'}`,
+            `类型: ${result.type || 'N/A'}`,
+            `logId: ${result.logId || 'N/A'}`,
+            result.success ? '' : `错误: ${result.error || '未知错误'}`
+        ].filter(Boolean).join(' | '));
+    });
+
+    return lines.join('\n');
+}
+
+async function copyTextToClipboard(text, button) {
+    const originalText = button.textContent;
+
+    try {
+        await navigator.clipboard.writeText(text);
+        button.textContent = '已复制';
+    } catch (error) {
+        button.textContent = '复制失败';
+        console.error('复制删除结果失败:', error);
+    }
+
+    window.setTimeout(() => {
+        button.textContent = originalText;
+    }, 1500);
+}
+
+function renderResultGroup(title, results, className) {
+    const group = document.createElement('div');
+    group.className = 'result-group';
+
+    appendTextElement(group, 'div', `result-group-title ${className}`, `${title} (${results.length})`);
+
+    results.forEach((result) => {
+        const item = document.createElement('div');
+        item.className = 'item';
+
+        appendTextElement(item, 'div', 'result-item-title', `${result.name || 'N/A'}`);
+        appendTextElement(item, 'div', 'result-item-meta', `ID: ${result.id || 'N/A'} | 类型: ${result.type || 'N/A'} | logId: ${result.logId || 'N/A'}`);
+
+        if (!result.success) {
+            appendTextElement(item, 'div', 'result-item-error', `错误: ${result.error || '未知错误'}`);
+        }
+
+        group.appendChild(item);
+    });
+
+    return group;
+}
+
 export function showDeleteResult(results) {
     const successCount = results.filter((result) => result.success).length;
     const failCount = results.length - successCount;
+    const successResults = results.filter((result) => result.success);
+    const failureResults = results.filter((result) => !result.success);
+    const resultText = buildDeleteResultText(results);
 
     dom.deleteResult.replaceChildren();
 
+    const header = document.createElement('div');
+    header.className = 'result-header';
+
     const summary = document.createElement('p');
+    summary.className = 'result-summary';
     summary.append('删除完成: ');
     appendTextElement(summary, 'span', 'success', `成功 ${successCount}`);
     summary.append(' | ');
     appendTextElement(summary, 'span', 'fail', `失败 ${failCount}`);
-    dom.deleteResult.appendChild(summary);
 
-    if (failCount > 0) {
-        const failureList = document.createElement('div');
-        failureList.style.marginTop = '12px';
+    const copyButton = document.createElement('button');
+    copyButton.type = 'button';
+    copyButton.className = 'copy-result-btn';
+    copyButton.textContent = '复制结果';
+    copyButton.addEventListener('click', () => copyTextToClipboard(resultText, copyButton));
 
-        results.forEach((result) => {
-            if (!result.success) {
-                appendTextElement(failureList, 'div', 'item', `ID: ${result.id} | 名称: ${result.name || 'N/A'} | 错误: ${result.error || '未知错误'}`);
-            }
-        });
+    header.appendChild(summary);
+    header.appendChild(copyButton);
+    dom.deleteResult.appendChild(header);
 
-        dom.deleteResult.appendChild(failureList);
+    if (failureResults.length > 0) {
+        dom.deleteResult.appendChild(renderResultGroup('失败明细', failureResults, 'fail'));
+    }
+
+    if (successResults.length > 0) {
+        dom.deleteResult.appendChild(renderResultGroup('成功明细', successResults, 'success'));
     }
 
     dom.resultSection.style.display = 'block';
