@@ -81,14 +81,26 @@
 
                         <div class="form-group">
                             <label>查询状态:</label>
-                            <div class="checkbox-group" id="tabsGroup">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" name="tab" value="2" checked>
+                            <div class="status-tabs" id="tabsGroup">
+                                <label class="status-tab">
+                                    <input type="radio" name="tab" value="all" checked>
+                                    <span>All</span>
+                                </label>
+                                <label class="status-tab">
+                                    <input type="radio" name="tab" value="2">
                                     <span>Ongoing</span>
                                 </label>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" name="tab" value="3" checked>
+                                <label class="status-tab">
+                                    <input type="radio" name="tab" value="3">
                                     <span>Upcoming</span>
+                                </label>
+                                <label class="status-tab">
+                                    <input type="radio" name="tab" value="4">
+                                    <span>Deactivated</span>
+                                </label>
+                                <label class="status-tab">
+                                    <input type="radio" name="tab" value="5">
+                                    <span>Ended</span>
                                 </label>
                             </div>
                         </div>

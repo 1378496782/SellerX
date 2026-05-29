@@ -15,9 +15,15 @@ export const promotionTypeNames = {
 };
 
 export const tabNames = {
+    all: 'All',
     2: 'Ongoing',
-    3: 'Upcoming'
+    3: 'Upcoming',
+    4: 'Deactivated',
+    5: 'Ended'
 };
+
+export const queryStatusTabs = [2, 3, 4, 5];
+export const deletableStatusTabs = [2, 3];
 
 export const displayTypeMap = {
     2: 1,

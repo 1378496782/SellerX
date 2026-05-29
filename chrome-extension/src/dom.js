@@ -1,4 +1,4 @@
-import { promotionTypeNames, tabNames } from './config.js';
+import { deletableStatusTabs, promotionTypeNames, queryStatusTabs, tabNames } from './config.js';
 
 export const dom = {};
 
@@ -45,6 +45,10 @@ export function setupEventListeners(handlers) {
     dom.deleteBtn.addEventListener('click', handlers.onDelete);
     dom.checkUpdateBtn.addEventListener('click', handlers.onCheckUpdate);
     dom.toggleRightPanelBtn.addEventListener('click', toggleRightPanel);
+    dom.promotionType.addEventListener('change', handlers.onFilterChange);
+    document.querySelectorAll('#tabsGroup input[name="tab"]').forEach((input) => {
+        input.addEventListener('change', handlers.onFilterChange);
+    });
 }
 
 export function toggleRightPanel() {
@@ -78,8 +82,25 @@ export function getSelectedPromotionType() {
 }
 
 export function getSelectedTabs() {
-    const tabsCheckboxes = document.querySelectorAll('#tabsGroup input[type="checkbox"]:checked');
-    return Array.from(tabsCheckboxes).map((option) => parseInt(option.value, 10));
+    const selected = document.querySelector('#tabsGroup input[name="tab"]:checked')?.value || 'all';
+    if (selected === 'all') {
+        return queryStatusTabs;
+    }
+
+    return [parseInt(selected, 10)];
+}
+
+export function getSelectedStatusValue() {
+    return document.querySelector('#tabsGroup input[name="tab"]:checked')?.value || 'all';
+}
+
+export function canDeleteSelectedStatus() {
+    const selected = getSelectedStatusValue();
+    if (selected === 'all') {
+        return false;
+    }
+
+    return deletableStatusTabs.includes(parseInt(selected, 10));
 }
 
 export function setUpdateButtonLoading(isLoading) {
@@ -97,6 +118,37 @@ function appendTextElement(parent, tagName, className, text) {
     return element;
 }
 
+function getPromotionStatusName(promotion) {
+    return tabNames[promotion.fromTab] || tabNames[promotion.status] || '未知';
+}
+
+function getPromotionTime(promotion, keys) {
+    for (const key of keys) {
+        const value = promotion[key];
+        if (value !== undefined && value !== null && value !== '') {
+            return formatPromotionTime(value);
+        }
+    }
+
+    return '-';
+}
+
+function formatPromotionTime(value) {
+    if (typeof value === 'number') {
+        const timestamp = value > 1000000000000 ? value : value * 1000;
+        return new Date(timestamp).toLocaleString();
+    }
+
+    const numericValue = Number(value);
+    if (!Number.isNaN(numericValue) && numericValue > 0) {
+        const timestamp = numericValue > 1000000000000 ? numericValue : numericValue * 1000;
+        return new Date(timestamp).toLocaleString();
+    }
+
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleString();
+}
+
 export function renderPromotionList(promotions) {
     dom.promotionList.replaceChildren();
 
@@ -110,7 +162,9 @@ export function renderPromotionList(promotions) {
 
     promotions.forEach((promotion) => {
         const typeName = promotionTypeNames[promotion.promotion_type] || '未知';
-        const tabName = tabNames[promotion.fromTab] || '未知';
+        const statusName = getPromotionStatusName(promotion);
+        const startTime = getPromotionTime(promotion, ['start_time', 'start_time_ms', 'begin_time', 'begin_time_ms', 'startTime']);
+        const endTime = getPromotionTime(promotion, ['end_time', 'end_time_ms', 'finish_time', 'finish_time_ms', 'endTime']);
 
         const item = document.createElement('div');
         item.className = 'promotion-item';
@@ -118,9 +172,20 @@ export function renderPromotionList(promotions) {
         const info = document.createElement('div');
         info.className = 'info';
 
-        appendTextElement(info, 'span', 'name', promotion.name || '未命名活动');
-        appendTextElement(info, 'span', 'meta', `ID: ${promotion.id} | 类型: ${typeName} | ${tabName}`);
+        const titleRow = document.createElement('div');
+        titleRow.className = 'promotion-title-row';
+        appendTextElement(titleRow, 'span', 'name', promotion.name || '未命名活动');
+        appendTextElement(titleRow, 'span', `status-pill status-${String(statusName).toLowerCase()}`, statusName);
 
+        const metaGrid = document.createElement('div');
+        metaGrid.className = 'promotion-meta-grid';
+        appendTextElement(metaGrid, 'span', 'meta', `ID: ${promotion.id || 'N/A'}`);
+        appendTextElement(metaGrid, 'span', 'meta', `类型: ${typeName}`);
+        appendTextElement(metaGrid, 'span', 'meta', `开始: ${startTime}`);
+        appendTextElement(metaGrid, 'span', 'meta', `结束: ${endTime}`);
+
+        info.appendChild(titleRow);
+        info.appendChild(metaGrid);
         item.appendChild(info);
         dom.promotionList.appendChild(item);
     });

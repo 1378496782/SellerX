@@ -376,19 +376,59 @@ body.expanded {
     min-width: 0;
 }
 
+.promotion-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
 .promotion-item .name {
     font-weight: 600;
     color: #333;
-    display: block;
-    margin-bottom: 2px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
+.promotion-meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 10px;
+}
+
 .promotion-item .meta {
     color: #888;
     font-size: 11px;
+    line-height: 1.4;
+    word-break: break-all;
+}
+
+.status-pill {
+    flex-shrink: 0;
+    padding: 2px 7px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 700;
+    color: #fff;
+    background: #94a3b8;
+}
+
+.status-ongoing {
+    background: #16a34a;
+}
+
+.status-upcoming {
+    background: #2563eb;
+}
+
+.status-deactivated {
+    background: #f59e0b;
+}
+
+.status-ended {
+    background: #64748b;
 }
 
 .result-content {
@@ -447,12 +487,13 @@ body.expanded {
     }
 }
 
-.checkbox-group {
+.status-tabs {
     display: flex;
-    gap: 12px;
+    flex-wrap: wrap;
+    gap: 6px;
 }
 
-.checkbox-label {
+.status-tab {
     display: flex;
     align-items: center;
     font-size: 12px;
@@ -461,7 +502,26 @@ body.expanded {
     user-select: none;
 }
 
-.checkbox-label input[type="checkbox"] {
-    margin-right: 6px;
-    cursor: pointer;
+.status-tab input[type="radio"] {
+    display: none;
+}
+
+.status-tab span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 28px;
+    padding: 5px 10px;
+    border: 1px solid #e5e7eb;
+    border-radius: 999px;
+    background: #f8f9fa;
+    color: #555;
+    transition: all 0.2s;
+}
+
+.status-tab input[type="radio"]:checked+span {
+    border-color: #667eea;
+    background: #eef2ff;
+    color: #4f46e5;
+    font-weight: 700;
 }

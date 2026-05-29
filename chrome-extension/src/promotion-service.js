@@ -47,13 +47,12 @@ function buildQueryRequestBody(tab, promotionType) {
         requestBody.promotion_type = promotionType;
     }
 
-    if (tab === 2) {
-        requestBody.status = 2;
-        if (promotionType) {
-            requestBody.display_type = getDisplayType(promotionType);
-        }
-    } else if (tab === 3) {
-        requestBody.status = 3;
+    if ([2, 3, 4, 5].includes(tab)) {
+        requestBody.status = tab;
+    }
+
+    if (tab === 2 && promotionType) {
+        requestBody.display_type = getDisplayType(promotionType);
     }
 
     return requestBody;

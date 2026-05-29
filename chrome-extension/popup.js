@@ -1,4 +1,4 @@
-import { cacheDom, dom, getSelectedPromotionType, getSelectedTabs, hideLogPanel, hideResult, renderCurrentVersion, renderPromotionList, renderShopInfo, renderVersion, setDeleteButtonEnabled, setUpdateButtonLoading, setupEventListeners, showDeleteResult, showLoading } from './src/dom.js';
+import { cacheDom, canDeleteSelectedStatus, getSelectedPromotionType, getSelectedTabs, hideLogPanel, hideResult, renderCurrentVersion, renderPromotionList, renderShopInfo, renderVersion, setDeleteButtonEnabled, setUpdateButtonLoading, setupEventListeners, showDeleteResult, showLoading } from './src/dom.js';
 import { log } from './src/logger.js';
 import { getCookies, getCurrentPageInfo, getSellerInfoFromApi } from './src/seller-service.js';
 import { appState } from './src/state.js';
@@ -78,7 +78,7 @@ async function queryPromotions() {
         });
 
         renderPromotionList(promotions);
-        setDeleteButtonEnabled(promotions.length > 0);
+        setDeleteButtonEnabled(promotions.length > 0 && canDeleteSelectedStatus());
     } catch (error) {
         log('查询失败: ' + error.message, 'error');
         console.error('查询失败:', error);
@@ -89,6 +89,11 @@ async function queryPromotions() {
 }
 
 async function deletePromotions() {
+    if (!canDeleteSelectedStatus()) {
+        log('当前状态不支持删除，请切换到 Ongoing 或 Upcoming 后重新查询', 'warning');
+        return;
+    }
+
     if (appState.allPromotions.length === 0) {
         log('没有可删除的活动', 'warning');
         return;
@@ -114,12 +119,17 @@ async function deletePromotions() {
     showLoading(false);
 }
 
+function handleFilterChange() {
+    setDeleteButtonEnabled(false);
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     cacheDom();
     await init();
     setupEventListeners({
         onQuery: queryPromotions,
         onDelete: deletePromotions,
-        onCheckUpdate: checkForUpdates
+        onCheckUpdate: checkForUpdates,
+        onFilterChange: handleFilterChange
     });
 });
