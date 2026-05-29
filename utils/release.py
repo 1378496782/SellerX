@@ -40,7 +40,7 @@ def run_command(cmd, cwd=None):
         print(f"Exception: {e}")
         return False
 
-def wait_and_rename_crx(script_dir, new_version):
+def wait_and_rename_crx(parent_dir, new_version):
     """Wait for .crx file to be created and rename it"""
     print("\n--- Waiting for .crx file ---")
     print("Please package the extension in Chrome now.")
@@ -50,13 +50,13 @@ def wait_and_rename_crx(script_dir, new_version):
     start_time = time.time()
     
     while time.time() - start_time < max_wait:
-        crx_files = glob.glob(os.path.join(script_dir, "chrome-extension.crx"))
+        crx_files = glob.glob(os.path.join(parent_dir, "chrome-extension.crx"))
         if crx_files:
             crx_path = crx_files[0]
             print(f"✓ Found {crx_path}")
             
             # Rename to sellerx-extension.crx
-            new_path = os.path.join(script_dir, "sellerx-extension.crx")
+            new_path = os.path.join(parent_dir, "sellerx-extension.crx")
             os.rename(crx_path, new_path)
             print(f"✓ Renamed to {new_path}")
             return new_path
@@ -68,7 +68,7 @@ def wait_and_rename_crx(script_dir, new_version):
             crx_path = crx_downloads[0]
             print(f"✓ Found in Downloads: {crx_path}")
             
-            new_path = os.path.join(script_dir, "sellerx-extension.crx")
+            new_path = os.path.join(parent_dir, "sellerx-extension.crx")
             os.rename(crx_path, new_path)
             print(f"✓ Moved and renamed to {new_path}")
             return new_path
@@ -81,9 +81,10 @@ def wait_and_rename_crx(script_dir, new_version):
 
 def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    manifest_path = os.path.join(script_dir, 'chrome-extension', 'manifest.json')
-    popup_path = os.path.join(script_dir, 'chrome-extension', 'popup.html')
-    update_xml_path = os.path.join(script_dir, 'chrome-extension', 'update.xml')
+    parent_dir = os.path.dirname(script_dir)
+    manifest_path = os.path.join(parent_dir, 'chrome-extension', 'manifest.json')
+    popup_path = os.path.join(parent_dir, 'chrome-extension', 'popup.html')
+    update_xml_path = os.path.join(parent_dir, 'chrome-extension', 'update.xml')
     
     # Get current version
     current_version = get_current_version(manifest_path)
@@ -124,26 +125,26 @@ def main():
     print("\n--- Git operations ---")
     
     # Check git status
-    if not run_command("git add -u", cwd=script_dir):
+    if not run_command("git add -u", cwd=parent_dir):
         return
     
     commit_msg = f"Release v{new_version}"
-    if not run_command(f'git commit -m "{commit_msg}"', cwd=script_dir):
+    if not run_command(f'git commit -m "{commit_msg}"', cwd=parent_dir):
         return
     
-    if not run_command(f'git tag -a v{new_version} -m "v{new_version}"', cwd=script_dir):
+    if not run_command(f'git tag -a v{new_version} -m "v{new_version}"', cwd=parent_dir):
         return
     
-    if not run_command("git push", cwd=script_dir):
+    if not run_command("git push", cwd=parent_dir):
         return
     
-    if not run_command(f"git push origin v{new_version}", cwd=script_dir):
+    if not run_command(f"git push origin v{new_version}", cwd=parent_dir):
         return
     
     print(f"\n🎉 Successfully released v{new_version}!")
     
     # Wait for and handle .crx file
-    crx_path = wait_and_rename_crx(script_dir, new_version)
+    crx_path = wait_and_rename_crx(parent_dir, new_version)
     
     print(f"\n{'='*50}")
     print(f"✅ All steps done! Now go to GitHub:")

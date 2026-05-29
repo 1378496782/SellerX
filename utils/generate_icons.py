@@ -44,7 +44,8 @@ def create_icon(size, text):
 
 def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    icons_dir = os.path.join(script_dir, 'chrome-extension', 'icons')
+    parent_dir = os.path.dirname(script_dir)
+    icons_dir = os.path.join(parent_dir, 'chrome-extension', 'icons')
     
     # Ensure icons directory exists
     os.makedirs(icons_dir, exist_ok=True)

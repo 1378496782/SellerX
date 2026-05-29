@@ -13,7 +13,8 @@ def resize_icon(input_path, output_path, size):
 
 def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    icons_dir = os.path.join(script_dir, 'chrome-extension', 'icons')
+    parent_dir = os.path.dirname(script_dir)
+    icons_dir = os.path.join(parent_dir, 'chrome-extension', 'icons')
     
     # Find any PNG file in icons dir as source
     source_files = [f for f in os.listdir(icons_dir) if f.endswith('.png')]

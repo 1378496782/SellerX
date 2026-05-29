@@ -37,7 +37,8 @@ def make_circle_icon(source_path, output_path, size):
 
 def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    icons_dir = os.path.join(script_dir, 'chrome-extension', 'icons')
+    parent_dir = os.path.dirname(script_dir)
+    icons_dir = os.path.join(parent_dir, 'chrome-extension', 'icons')
     source_path = os.path.join(icons_dir, 'original_icon.png')
     
     if not os.path.exists(source_path):
