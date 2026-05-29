@@ -28,8 +28,8 @@ body.expanded {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 15px;
-    width: 100%;
-    /* 占满容器宽度 */
+    max-width: 410px;
+    /* 固定最大宽度，不受页面展开影响 */
 }
 
 .header-left {
@@ -45,9 +45,7 @@ body.expanded {
     gap: 8px;
     flex-shrink: 0;
     justify-content: flex-start;
-    /* 改成左对齐 */
     margin-left: 20px;
-    /* 添加左边距，让按钮离左侧远一点 */
 }
 
 .title {
