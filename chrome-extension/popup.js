@@ -203,9 +203,9 @@ function processCookies(cookieArray) {
 // 获取当前页面信息
 async function getCurrentPageInfo() {
     return new Promise((resolve) => {
-        chrome.runtime.sendMessage({ action: 'getCurrentTab' }, (response) => {
-            if (response && response.success && response.tab) {
-                const currentUrl = response.tab.url;
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+            if (tabs && tabs[0]) {
+                const currentUrl = tabs[0].url;
                 log('当前页面 URL: ' + currentUrl);
 
                 // 从 URL 提取国家代码
@@ -234,15 +234,6 @@ async function getCurrentPageInfo() {
                         }
                     }
                 }
-            } else {
-                log('获取原标签页失败，尝试当前窗口...', 'warning');
-                // 备用方案：尝试查询当前窗口的活动标签
-                chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-                    if (tabs && tabs[0]) {
-                        const currentUrl = tabs[0].url;
-                        log('当前活动页面 URL: ' + currentUrl);
-                    }
-                });
             }
             resolve();
         });

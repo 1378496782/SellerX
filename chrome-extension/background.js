@@ -1,32 +1,7 @@
 // 后台脚本 - 处理 API 请求和跨域问题
-let currentTabId = null;
-
-// 点击插件图标打开独立窗口
-chrome.action.onClicked.addListener((tab) => {
-    currentTabId = tab.id;
-    chrome.windows.create({
-        url: chrome.runtime.getURL('popup.html'),
-        type: 'popup',
-        width: 1500,
-        height: 950
-    });
-});
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.action === 'getCurrentTab') {
-        if (currentTabId) {
-            chrome.tabs.get(currentTabId, (tab) => {
-                if (chrome.runtime.lastError) {
-                    sendResponse({ success: false, error: chrome.runtime.lastError.message });
-                } else {
-                    sendResponse({ success: true, tab: tab });
-                }
-            });
-        } else {
-            sendResponse({ success: false, error: 'No tab stored' });
-        }
-        return true;
-    } else if (request.action === 'fetchPromotions') {
+    if (request.action === 'fetchPromotions') {
         fetchPromotions(request.data).then(result => {
             sendResponse(result);
         });
