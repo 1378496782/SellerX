@@ -91,6 +91,12 @@ async function init() {
     showLoading(true);
 
     try {
+        // 默认隐藏右侧面板
+        const rightColumn = document.getElementById('rightColumn');
+        const leftColumn = document.querySelector('.left-column');
+        rightColumn.classList.add('hidden');
+        leftColumn.classList.add('expanded');
+
         // 显示版本信息
         const manifest = chrome.runtime.getManifest();
         document.getElementById('versionInfo').textContent = `版本: ${manifest.version}`;
@@ -248,6 +254,26 @@ function setupEventListeners() {
     document.getElementById('queryBtn').addEventListener('click', queryPromotions);
     document.getElementById('deleteBtn').addEventListener('click', deletePromotions);
     document.getElementById('checkUpdateBtn').addEventListener('click', checkForUpdates);
+    document.getElementById('toggleRightPanelBtn').addEventListener('click', toggleRightPanel);
+}
+
+// 切换右侧面板显示/隐藏
+function toggleRightPanel() {
+    const rightColumn = document.getElementById('rightColumn');
+    const leftColumn = document.querySelector('.left-column');
+    const btn = document.getElementById('toggleRightPanelBtn');
+
+    if (rightColumn.classList.contains('hidden')) {
+        // 显示面板
+        rightColumn.classList.remove('hidden');
+        leftColumn.classList.remove('expanded');
+        btn.textContent = '📜 隐藏日志';
+    } else {
+        // 隐藏面板
+        rightColumn.classList.add('hidden');
+        leftColumn.classList.add('expanded');
+        btn.textContent = '📜 显示日志';
+    }
 }
 
 // 检查更新
