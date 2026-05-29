@@ -99,18 +99,19 @@ async function init() {
         const manifest = chrome.runtime.getManifest();
         document.getElementById('versionInfo').textContent = `版本: ${manifest.version}`;
 
-        // 优先通过 API 获取 Seller 信息
+        // 优先通过 API 获取 Seller 信息和国家代码
         log('--- 尝试通过 API 获取 ---', 'info');
         await getSellerInfoFromApi();
 
-        // 如果 API 没有获取到信息，回退到 Cookie 方式
-        if (!oecSellerId || !countryCode) {
-            log('--- 回退到 Cookie 方式 ---', 'info');
-            await getCookies();
-        }
+        // 必须获取 Cookie（后续 HTTP 请求需要用到）
+        log('--- 获取 Cookie（用于后续请求） ---', 'info');
+        await getCookies();
 
-        // 获取当前页面信息（补充国家代码等）
-        await getCurrentPageInfo();
+        // 如果 API 没有获取到 Seller ID 或国家代码，尝试从 Cookie 或页面 URL 获取
+        if (!oecSellerId || !countryCode) {
+            log('--- 补充获取信息（API 未完全获取） ---', 'info');
+            await getCurrentPageInfo();
+        }
 
         // 更新 UI
         document.getElementById('countryCode').textContent = countryCode || '未获取到';
@@ -154,13 +155,13 @@ async function getSellerInfoFromApi() {
 
             if (currentDomain.includes('tiktok')) {
                 apiDomain = currentDomain;
-                const tiktokMatch = currentDomain.match(/seller-([a-z]{2})\.tiktok\.com/i);
+                const tiktokMatch = currentDomain.match(/seller-([a-z]{2})\.tiktok\.(com|net)/i);
                 if (tiktokMatch) {
                     defaultRegion = tiktokMatch[1].toUpperCase();
                 }
             } else if (currentDomain.includes('tokopedia')) {
                 apiDomain = currentDomain;
-                const tokopediaMatch = currentDomain.match(/seller-([a-z]{2})\.tokopedia\.com/i);
+                const tokopediaMatch = currentDomain.match(/seller-([a-z]{2})\.tokopedia\.(com|net)/i);
                 if (tokopediaMatch) {
                     defaultRegion = tokopediaMatch[1].toUpperCase();
                 }
@@ -201,47 +202,42 @@ async function getSellerInfoFromApi() {
                 }
 
                 const data = await response.json();
-                log('API 响应: ' + JSON.stringify(data).substring(0, 500) + '...', 'info');
+                log('API 响应成功', 'success');
 
-                // 尝试从响应中提取 Seller ID
+                // 从响应中提取信息
                 if (data && data.data) {
-                    // 尝试多种可能的字段名
-                    const sellerIdFields = [
-                        'oec_seller_id',
-                        'seller_id',
-                        'OecSellerId',
-                        'SellerId',
-                        'shop_id',
-                        'ShopId',
-                        'global_seller_id',
-                        'GlobalSellerId'
-                    ];
-
-                    for (const field of sellerIdFields) {
-                        if (data.data[field] && !oecSellerId) {
-                            oecSellerId = data.data[field];
+                    // 优先从 seller 对象中获取
+                    if (data.data.seller) {
+                        // 获取 Seller ID
+                        if (data.data.seller.seller_id) {
+                            oecSellerId = data.data.seller.seller_id;
                             sellerId = oecSellerId;
-                            log('✓ 从 API 获取 Seller ID (' + field + '): ' + oecSellerId, 'success');
-                            break;
+                            log('✓ 从 API 获取 Seller ID: ' + oecSellerId, 'success');
+                        }
+
+                        // 获取国家代码（优先使用 region_code）
+                        if (data.data.seller.region_code) {
+                            countryCode = data.data.seller.region_code.toUpperCase();
+                            log('✓ 从 API 获取国家代码 (region_code): ' + countryCode, 'success');
+                        } else if (data.data.seller.shop_region) {
+                            countryCode = data.data.seller.shop_region.toUpperCase();
+                            log('✓ 从 API 获取国家代码 (shop_region): ' + countryCode, 'success');
                         }
                     }
 
-                    // 尝试从嵌套结构中获取
-                    if (!oecSellerId && data.data.seller) {
-                        for (const field of sellerIdFields) {
-                            if (data.data.seller[field] && !oecSellerId) {
-                                oecSellerId = data.data.seller[field];
-                                sellerId = oecSellerId;
-                                log('✓ 从 API 嵌套结构获取 Seller ID (' + field + '): ' + oecSellerId, 'success');
-                                break;
-                            }
+                    // 如果 seller 对象中没有，尝试从 global_seller 获取
+                    if (!oecSellerId && data.data.global_seller) {
+                        if (data.data.global_seller.global_seller_id) {
+                            oecSellerId = data.data.global_seller.global_seller_id;
+                            sellerId = oecSellerId;
+                            log('✓ 从 API 获取 Global Seller ID: ' + oecSellerId, 'success');
                         }
                     }
 
-                    // 尝试获取国家代码
-                    if (!countryCode && data.data.region) {
-                        countryCode = data.data.region.toUpperCase();
-                        log('✓ 从 API 获取国家代码: ' + countryCode, 'success');
+                    // 如果上面都没有，尝试 base_region
+                    if (!countryCode && data.data.base_region) {
+                        countryCode = data.data.base_region.toUpperCase();
+                        log('✓ 从 API 获取国家代码 (base_region): ' + countryCode, 'success');
                     }
                 }
 
