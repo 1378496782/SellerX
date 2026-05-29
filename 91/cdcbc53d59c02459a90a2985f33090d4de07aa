@@ -1,0 +1,185 @@
+chrome-extension/popup.js
+  8b43f6d8181ab594 254,259-260,265-266 gitai:{"mixed_line_ranges":[],"operations":[{"operation_id":"6a191bd6c95247b5d2bf991b","tool_type":"agent","tool_id":"Edit","line_ranges":[{"Single":254},{"Range":[259,260]},{"Range":[265,266]}]}]}
+chrome-extension/styles.css
+  8b43f6d8181ab594 10,13-17,81-83,85-88,91,94-99,102,105,110 gitai:{"mixed_line_ranges":[{"Single":10},{"Single":17}],"operations":[{"operation_id":"6a191bd6c95247b5d2bf991b","tool_type":"agent","tool_id":"Edit","line_ranges":[{"Single":10},{"Range":[13,17]},{"Range":[81,83]},{"Range":[85,88]},{"Single":91},{"Range":[94,99]},{"Single":102},{"Single":105},{"Single":110}]}]}
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "91cdcbc53d59c02459a90a2985f33090d4de07aa",
+  "prompts": {
+    "8b43f6d8181ab594": {
+      "agent_id": {
+        "tool": "trae",
+        "id": "6a189702c95247b5d2bf9597",
+        "model": "Doubao-Seed-2.0-Code__dev"
+      },
+      "human_author": "zhangfuwei.666 <zhangfuwei.666@bytedance.com>",
+      "messages": [],
+      "total_additions": 46,
+      "total_deletions": 28,
+      "accepted_lines": 28,
+      "overriden_lines": 2
+    }
+  },
+  "attestation_metadata": {
+    "chrome-extension/popup.js": [
+      {
+        "hash": "8b43f6d8181ab594",
+        "line_ranges": [
+          {
+            "Single": 254
+          },
+          {
+            "Range": [
+              259,
+              260
+            ]
+          },
+          {
+            "Range": [
+              265,
+              266
+            ]
+          }
+        ],
+        "mixed_line_ranges": [],
+        "operations": [
+          {
+            "operation_id": "6a191bd6c95247b5d2bf991b",
+            "tool_type": "agent",
+            "tool_id": "Edit",
+            "line_ranges": [
+              {
+                "Single": 254
+              },
+              {
+                "Range": [
+                  259,
+                  260
+                ]
+              },
+              {
+                "Range": [
+                  265,
+                  266
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "chrome-extension/styles.css": [
+      {
+        "hash": "8b43f6d8181ab594",
+        "line_ranges": [
+          {
+            "Single": 10
+          },
+          {
+            "Range": [
+              13,
+              17
+            ]
+          },
+          {
+            "Range": [
+              81,
+              83
+            ]
+          },
+          {
+            "Range": [
+              85,
+              88
+            ]
+          },
+          {
+            "Single": 91
+          },
+          {
+            "Range": [
+              94,
+              99
+            ]
+          },
+          {
+            "Single": 102
+          },
+          {
+            "Single": 105
+          },
+          {
+            "Single": 110
+          }
+        ],
+        "mixed_line_ranges": [
+          {
+            "Single": 10
+          },
+          {
+            "Single": 17
+          }
+        ],
+        "operations": [
+          {
+            "operation_id": "6a191bd6c95247b5d2bf991b",
+            "tool_type": "agent",
+            "tool_id": "Edit",
+            "line_ranges": [
+              {
+                "Single": 10
+              },
+              {
+                "Range": [
+                  13,
+                  17
+                ]
+              },
+              {
+                "Range": [
+                  81,
+                  83
+                ]
+              },
+              {
+                "Range": [
+                  85,
+                  88
+                ]
+              },
+              {
+                "Single": 91
+              },
+              {
+                "Range": [
+                  94,
+                  99
+                ]
+              },
+              {
+                "Single": 102
+              },
+              {
+                "Single": 105
+              },
+              {
+                "Single": 110
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "remote_transcripts": {
+    "8b43f6d8181ab594": {
+      "tool": "trae",
+      "conversation_id": "6a189702c95247b5d2bf9597",
+      "session_id": "6a189702c95247b5d2bf9597",
+      "status": "remote_only",
+      "message": "Remote transcript resolution is not implemented yet for TRAE prompts."
+    }
+  }
+}
