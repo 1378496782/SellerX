@@ -74,13 +74,15 @@ body {
 }
 
 .left-column {
-    flex: 1;
+    flex: 0 0 40%;
+    max-width: 40%;
     min-width: 0;
     transition: all 0.3s ease;
 }
 
 .left-column.expanded {
     flex: 0 0 100%;
+    max-width: 100%;
 }
 
 .right-column {
@@ -170,8 +172,8 @@ body {
 .log-section {
     background: #fff;
     border-radius: 12px;
-    padding: 16px;
-    margin-bottom: 16px;
+    padding: 12px;
+    margin-bottom: 12px;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
 }
 
@@ -188,11 +190,11 @@ body {
 .list-section h2,
 .result-section h2,
 .log-section h2 {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
     color: #666;
-    margin-bottom: 12px;
-    padding-bottom: 8px;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
     border-bottom: 1px solid #eee;
 }
 
@@ -273,22 +275,22 @@ body {
 }
 
 .form-group {
-    margin-bottom: 12px;
+    margin-bottom: 8px;
 }
 
 .form-group label {
     display: block;
-    font-size: 12px;
+    font-size: 11px;
     color: #666;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
 }
 
 .form-group select {
     width: 100%;
-    padding: 10px 12px;
+    padding: 8px 10px;
     border: 1px solid #ddd;
-    border-radius: 8px;
-    font-size: 13px;
+    border-radius: 6px;
+    font-size: 12px;
     background: #fff;
     cursor: pointer;
     outline: none;
@@ -307,10 +309,10 @@ body {
 
 .btn {
     flex: 1;
-    padding: 12px 16px;
+    padding: 10px 14px;
     border: none;
-    border-radius: 8px;
-    font-size: 14px;
+    border-radius: 6px;
+    font-size: 13px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
