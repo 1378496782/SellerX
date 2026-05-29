@@ -1,0 +1,209 @@
+chrome-extension/src/promotion-service.js
+  8c13ef6e6284127e 181,245-251 gitai:{"mixed_line_ranges":[],"operations":[{"operation_id":"6a19bfe3c95247b5d2bfa05a","tool_type":"agent","tool_id":"apply_patch","line_ranges":[{"Single":181},{"Range":[245,251]}]}]}
+chrome-extension/styles.css
+  8c13ef6e6284127e 438-449,468-510 gitai:{"mixed_line_ranges":[],"operations":[{"operation_id":"6a19bfe3c95247b5d2bfa05a","tool_type":"agent","tool_id":"apply_patch","line_ranges":[{"Range":[438,449]},{"Range":[468,510]}]}]}
+chrome-extension/src/dom.js
+  8c13ef6e6284127e 194-254,258-260,264-266,268,274-282,284-286,288-289 gitai:{"mixed_line_ranges":[],"operations":[{"operation_id":"6a19bfe3c95247b5d2bfa05a","tool_type":"agent","tool_id":"apply_patch","line_ranges":[{"Range":[194,254]},{"Range":[258,260]},{"Range":[264,266]},{"Single":268},{"Range":[274,282]},{"Range":[284,286]},{"Range":[288,289]}]}]}
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "3003f894bb3103c021d87e82a08e50144c111d35",
+  "prompts": {
+    "8c13ef6e6284127e": {
+      "agent_id": {
+        "tool": "trae",
+        "id": "6a19b474c95247b5d2bf9e82",
+        "model": "gpt-5.5__dev"
+      },
+      "human_author": "zhangfuwei.666 <zhangfuwei.666@bytedance.com>",
+      "messages": [],
+      "total_additions": 151,
+      "total_deletions": 13,
+      "accepted_lines": 151,
+      "overriden_lines": 0
+    }
+  },
+  "attestation_metadata": {
+    "chrome-extension/src/dom.js": [
+      {
+        "hash": "8c13ef6e6284127e",
+        "line_ranges": [
+          {
+            "Range": [
+              194,
+              254
+            ]
+          },
+          {
+            "Range": [
+              258,
+              260
+            ]
+          },
+          {
+            "Range": [
+              264,
+              266
+            ]
+          },
+          {
+            "Single": 268
+          },
+          {
+            "Range": [
+              274,
+              282
+            ]
+          },
+          {
+            "Range": [
+              284,
+              286
+            ]
+          },
+          {
+            "Range": [
+              288,
+              289
+            ]
+          }
+        ],
+        "mixed_line_ranges": [],
+        "operations": [
+          {
+            "operation_id": "6a19bfe3c95247b5d2bfa05a",
+            "tool_type": "agent",
+            "tool_id": "apply_patch",
+            "line_ranges": [
+              {
+                "Range": [
+                  194,
+                  254
+                ]
+              },
+              {
+                "Range": [
+                  258,
+                  260
+                ]
+              },
+              {
+                "Range": [
+                  264,
+                  266
+                ]
+              },
+              {
+                "Single": 268
+              },
+              {
+                "Range": [
+                  274,
+                  282
+                ]
+              },
+              {
+                "Range": [
+                  284,
+                  286
+                ]
+              },
+              {
+                "Range": [
+                  288,
+                  289
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "chrome-extension/src/promotion-service.js": [
+      {
+        "hash": "8c13ef6e6284127e",
+        "line_ranges": [
+          {
+            "Single": 181
+          },
+          {
+            "Range": [
+              245,
+              251
+            ]
+          }
+        ],
+        "mixed_line_ranges": [],
+        "operations": [
+          {
+            "operation_id": "6a19bfe3c95247b5d2bfa05a",
+            "tool_type": "agent",
+            "tool_id": "apply_patch",
+            "line_ranges": [
+              {
+                "Single": 181
+              },
+              {
+                "Range": [
+                  245,
+                  251
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "chrome-extension/styles.css": [
+      {
+        "hash": "8c13ef6e6284127e",
+        "line_ranges": [
+          {
+            "Range": [
+              438,
+              449
+            ]
+          },
+          {
+            "Range": [
+              468,
+              510
+            ]
+          }
+        ],
+        "mixed_line_ranges": [],
+        "operations": [
+          {
+            "operation_id": "6a19bfe3c95247b5d2bfa05a",
+            "tool_type": "agent",
+            "tool_id": "apply_patch",
+            "line_ranges": [
+              {
+                "Range": [
+                  438,
+                  449
+                ]
+              },
+              {
+                "Range": [
+                  468,
+                  510
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "remote_transcripts": {
+    "8c13ef6e6284127e": {
+      "tool": "trae",
+      "conversation_id": "6a19b474c95247b5d2bf9e82",
+      "session_id": "6a19b474c95247b5d2bf9e82",
+      "status": "remote_only",
+      "message": "Remote transcript resolution is not implemented yet for TRAE prompts."
+    }
+  }
+}
