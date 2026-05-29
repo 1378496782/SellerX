@@ -235,6 +235,9 @@ function renderResultGroup(title, results, className) {
 
     appendTextElement(group, 'div', `result-group-title ${className}`, `${title} (${results.length})`);
 
+    const groupBody = document.createElement('div');
+    groupBody.className = 'result-group-body';
+
     results.forEach((result) => {
         const item = document.createElement('div');
         item.className = 'item';
@@ -246,9 +249,10 @@ function renderResultGroup(title, results, className) {
             appendTextElement(item, 'div', 'result-item-error', `错误: ${result.error || '未知错误'}`);
         }
 
-        group.appendChild(item);
+        groupBody.appendChild(item);
     });
 
+    group.appendChild(groupBody);
     return group;
 }
 
