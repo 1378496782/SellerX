@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "SellerX",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "批量管理和删除 TikTok Shop Seller 店铺的促销活动",
   "permissions": [
     "cookies",

@@ -1,0 +1,68 @@
+name: Release Chrome Extension
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      CHROME_EXTENSION_PRIVATE_KEY: ${{ secrets.CHROME_EXTENSION_PRIVATE_KEY }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Chrome
+        uses: browser-actions/setup-chrome@v1
+
+      - name: Validate extension version
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          MANIFEST_VERSION=$(python3 -c "import json; print(json.load(open('chrome-extension/manifest.json'))['version'])")
+          if [ "$VERSION" != "$MANIFEST_VERSION" ]; then
+            echo "Tag version $VERSION does not match manifest version $MANIFEST_VERSION"
+            exit 1
+          fi
+
+      - name: Build extension zip
+        run: |
+          cd chrome-extension
+          zip -r ../sellerx-extension.zip . \
+            -x "*.git*" \
+            -x "*.github*" \
+            -x "*.DS_Store"
+
+      - name: Prepare extension private key
+        if: ${{ env.CHROME_EXTENSION_PRIVATE_KEY != '' }}
+        run: |
+          printf '%s' "$CHROME_EXTENSION_PRIVATE_KEY" > extension.pem
+          chmod 600 extension.pem
+
+      - name: Build extension crx
+        if: ${{ env.CHROME_EXTENSION_PRIVATE_KEY != '' }}
+        run: |
+          chrome --pack-extension="$(pwd)/chrome-extension" --pack-extension-key="$(pwd)/extension.pem"
+          mv chrome-extension.crx sellerx-extension.crx
+
+      - name: Warn when crx is skipped
+        if: ${{ env.CHROME_EXTENSION_PRIVATE_KEY == '' }}
+        run: |
+          echo "::warning::CHROME_EXTENSION_PRIVATE_KEY is not configured. sellerx-extension.crx will not be generated."
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            sellerx-extension.zip
+            sellerx-extension.crx
+            chrome-extension/update.xml
+          fail_on_unmatched_files: false
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
