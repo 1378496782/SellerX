@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760" role="img" aria-label="SellerX delete result preview">
+
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#667eea"/>
+      <stop offset="100%" stop-color="#764ba2"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#1f2937" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="760" rx="34" fill="url(#bg)"/>
+  <text x="52" y="72" fill="#fff" font-family="Arial, sans-serif" font-size="30" font-weight="700">📦 SellerX</text>
+  <text x="228" y="72" fill="rgba(255,255,255,0.86)" font-family="Arial, sans-serif" font-size="18">版本: 1.1.1</text>
+  <rect x="850" y="38" width="126" height="44" rx="12" fill="rgba(255,255,255,0.18)" stroke="rgba(255,255,255,0.35)"/>
+  <text x="879" y="66" fill="#fff" font-family="Arial, sans-serif" font-size="16" font-weight="700">显示日志</text>
+  <rect x="990" y="38" width="126" height="44" rx="12" fill="rgba(255,255,255,0.18)" stroke="rgba(255,255,255,0.35)"/>
+  <text x="1019" y="66" fill="#fff" font-family="Arial, sans-serif" font-size="16" font-weight="700">检查更新</text>
+
+  <rect x="52" y="116" width="520" height="520" rx="22" fill="#fff" filter="url(#shadow)"/>
+  <text x="82" y="164" fill="#555" font-family="Arial, sans-serif" font-size="24" font-weight="700">✅ 删除结果</text>
+  <text x="82" y="210" fill="#333" font-family="Arial, sans-serif" font-size="18">删除完成: </text>
+  <text x="180" y="210" fill="#10b981" font-family="Arial, sans-serif" font-size="18" font-weight="700">成功 49</text>
+  <text x="260" y="210" fill="#333" font-family="Arial, sans-serif" font-size="18"> | </text>
+  <text x="282" y="210" fill="#ef4444" font-family="Arial, sans-serif" font-size="18" font-weight="700">失败 1</text>
+  <rect x="430" y="184" width="94" height="34" rx="8" fill="#fff" stroke="#ddd"/>
+  <text x="449" y="207" fill="#555" font-family="Arial, sans-serif" font-size="15">复制结果</text>
+
+  <text x="82" y="262" fill="#ef4444" font-family="Arial, sans-serif" font-size="17" font-weight="700">失败明细 (1)</text>
+  <rect x="82" y="280" width="440" height="96" rx="12" fill="#f8f9fa"/>
+  <text x="102" y="314" fill="#333" font-family="Arial, sans-serif" font-size="17" font-weight="700">E2E_PromoCode_9944127246</text>
+  <text x="102" y="344" fill="#666" font-family="Arial, sans-serif" font-size="14">ID: 745267741457380 | 类型: 促销码</text>
+  <text x="102" y="368" fill="#dc2626" font-family="Arial, sans-serif" font-size="14">错误: API code 10001: permission denied</text>
+
+  <text x="82" y="428" fill="#10b981" font-family="Arial, sans-serif" font-size="17" font-weight="700">成功明细 (49)</text>
+  <rect x="82" y="446" width="440" height="70" rx="12" fill="#f8f9fa"/>
+  <text x="102" y="480" fill="#333" font-family="Arial, sans-serif" font-size="17" font-weight="700">Discount 29/05/2026 08:59:53</text>
+  <text x="102" y="506" fill="#666" font-family="Arial, sans-serif" font-size="14">ID: 7645235048427128590 | logId: 202605291637...</text>
+
+  <rect x="638" y="116" width="510" height="520" rx="22" fill="#111827" filter="url(#shadow)"/>
+  <text x="668" y="164" fill="#e5e7eb" font-family="Arial, sans-serif" font-size="24" font-weight="700">📜 执行日志</text>
+  <g font-family="Menlo, Consolas, monospace" font-size="16">
+    <text x="668" y="220" fill="#4cc9f0">[00:37:35] 步骤2: 开始删除</text>
+    <text x="668" y="254" fill="#4cc9f0">[00:37:35] 待删除活动数: 50</text>
+    <text x="668" y="288" fill="#4ade80">[00:37:56] 删除活动 ID: 764523... - 成功</text>
+    <text x="668" y="322" fill="#ef4444">[00:37:56] 删除促销码 ID: 745267... - 失败</text>
+    <text x="668" y="380" fill="#e5e7eb">========================================</text>
+    <text x="668" y="414" fill="#4ade80">[00:37:56] 成功: 49, 失败: 1</text>
+    <text x="668" y="448" fill="#ef4444">[00:37:56] 失败活动 ID: 745267741457380</text>
+  </g>
+
+</svg>

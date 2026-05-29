@@ -23,6 +23,20 @@ SellerX 是一个 Chrome Extension，用于批量查询、管理和删除 TikTok
 - 增强后台请求错误处理，区分网络错误、HTTP 错误和 JSON 解析错误。
 - 修复 GitHub Actions 中 CRX 自动打包流程，已验证 `CHROME_EXTENSION_PRIVATE_KEY` Secret 生效。
 
+## 界面预览
+
+### 主界面
+
+![SellerX 主界面](docs/screenshots/sellerx-main.svg)
+
+### 活动列表
+
+![SellerX 活动列表](docs/screenshots/sellerx-activity-list.svg)
+
+### 删除结果与执行日志
+
+![SellerX 删除结果与执行日志](docs/screenshots/sellerx-delete-result.svg)
+
 ## 安装方式
 
 ### 方法 1：从 GitHub Releases 下载
