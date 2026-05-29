@@ -9,19 +9,19 @@ let allPromotions = [];
 
 // 活动类型映射
 const promotionTypeNames = {
-    1: '全部活动/券',
-    2: '商家券',
-    3: '运费折扣',
-    4: '商品折扣',
-    5: '限时闪购',
-    6: '赠品活动',
-    7: '多买多省',
-    8: '套装优惠',
-    9: '促销码(旧)',
-    10: '早鸟价',
-    11: 'SNS商品折扣',
-    12: '创作者专属',
-    17: '促销码'
+    1: 'All Promotions',
+    2: 'Regular coupon',
+    3: 'Shipping Discount',
+    4: 'Product Discount',
+    5: 'Flash Sale',
+    6: 'Gift with Purchase',
+    7: 'Buy More Save More',
+    8: 'Bundle Deal',
+    9: 'Promo Code (Old)',
+    10: 'Early Bird',
+    11: 'SNS',
+    12: 'Creator LIVE deal',
+    17: 'Promo Code'
 };
 
 // tab 映射
