@@ -99,10 +99,17 @@ async function init() {
         const manifest = chrome.runtime.getManifest();
         document.getElementById('versionInfo').textContent = `版本: ${manifest.version}`;
 
-        // 获取 cookies
-        await getCookies();
+        // 优先通过 API 获取 Seller 信息
+        log('--- 尝试通过 API 获取 ---', 'info');
+        await getSellerInfoFromApi();
 
-        // 获取当前页面信息
+        // 如果 API 没有获取到信息，回退到 Cookie 方式
+        if (!oecSellerId || !countryCode) {
+            log('--- 回退到 Cookie 方式 ---', 'info');
+            await getCookies();
+        }
+
+        // 获取当前页面信息（补充国家代码等）
         await getCurrentPageInfo();
 
         // 更新 UI
@@ -127,6 +134,130 @@ async function init() {
     showLoading(false);
 }
 
+// 通过 API 获取 Seller 信息
+async function getSellerInfoFromApi() {
+    return new Promise((resolve) => {
+        chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
+            if (!tabs || !tabs[0] || !tabs[0].url) {
+                log('无法获取当前页面信息', 'warning');
+                resolve();
+                return;
+            }
+
+            const url = new URL(tabs[0].url);
+            const currentDomain = url.hostname;
+            log('当前页面域名: ' + currentDomain, 'info');
+
+            // 根据域名类型确定 API 域名
+            let apiDomain = '';
+            let defaultRegion = '';
+
+            if (currentDomain.includes('tiktok')) {
+                apiDomain = currentDomain;
+                const tiktokMatch = currentDomain.match(/seller-([a-z]{2})\.tiktok\.com/i);
+                if (tiktokMatch) {
+                    defaultRegion = tiktokMatch[1].toUpperCase();
+                }
+            } else if (currentDomain.includes('tokopedia')) {
+                apiDomain = currentDomain;
+                const tokopediaMatch = currentDomain.match(/seller-([a-z]{2})\.tokopedia\.com/i);
+                if (tokopediaMatch) {
+                    defaultRegion = tokopediaMatch[1].toUpperCase();
+                }
+            }
+
+            if (!apiDomain) {
+                log('无法识别的域名，跳过 API 获取', 'warning');
+                resolve();
+                return;
+            }
+
+            const apiUrl = `https://${apiDomain}/api/v3/seller/common/get?need_verify_account=true&default_region=${defaultRegion}&version=3`;
+            log('正在调用 API: ' + apiUrl, 'info');
+
+            try {
+                // 使用 fetch 请求
+                const response = await fetch(apiUrl, {
+                    method: 'GET',
+                    credentials: 'include', // 携带 cookies
+                    headers: {
+                        'accept': '*/*',
+                        'accept-language': 'zh-CN,zh;q=0.9',
+                        'referer': `https://${apiDomain}/homepage`,
+                        'sec-ch-ua': '"Chromium";v="148", "Google Chrome";v="148", "Not/A)Brand";v="99"',
+                        'sec-ch-ua-mobile': '?0',
+                        'sec-ch-ua-platform': '"macOS"',
+                        'sec-fetch-dest': 'empty',
+                        'sec-fetch-mode': 'cors',
+                        'sec-fetch-site': 'same-origin',
+                        'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36'
+                    }
+                });
+
+                if (!response.ok) {
+                    log('API 请求失败，HTTP 状态码: ' + response.status, 'warning');
+                    resolve();
+                    return;
+                }
+
+                const data = await response.json();
+                log('API 响应: ' + JSON.stringify(data).substring(0, 500) + '...', 'info');
+
+                // 尝试从响应中提取 Seller ID
+                if (data && data.data) {
+                    // 尝试多种可能的字段名
+                    const sellerIdFields = [
+                        'oec_seller_id',
+                        'seller_id',
+                        'OecSellerId',
+                        'SellerId',
+                        'shop_id',
+                        'ShopId',
+                        'global_seller_id',
+                        'GlobalSellerId'
+                    ];
+
+                    for (const field of sellerIdFields) {
+                        if (data.data[field] && !oecSellerId) {
+                            oecSellerId = data.data[field];
+                            sellerId = oecSellerId;
+                            log('✓ 从 API 获取 Seller ID (' + field + '): ' + oecSellerId, 'success');
+                            break;
+                        }
+                    }
+
+                    // 尝试从嵌套结构中获取
+                    if (!oecSellerId && data.data.seller) {
+                        for (const field of sellerIdFields) {
+                            if (data.data.seller[field] && !oecSellerId) {
+                                oecSellerId = data.data.seller[field];
+                                sellerId = oecSellerId;
+                                log('✓ 从 API 嵌套结构获取 Seller ID (' + field + '): ' + oecSellerId, 'success');
+                                break;
+                            }
+                        }
+                    }
+
+                    // 尝试获取国家代码
+                    if (!countryCode && data.data.region) {
+                        countryCode = data.data.region.toUpperCase();
+                        log('✓ 从 API 获取国家代码: ' + countryCode, 'success');
+                    }
+                }
+
+                if (!oecSellerId) {
+                    log('未能从 API 响应中找到 Seller ID', 'warning');
+                }
+
+            } catch (error) {
+                log('API 请求异常: ' + error.message, 'warning');
+            }
+
+            resolve();
+        });
+    });
+}
+
 // 获取 cookies - 只从当前页面域名获取
 async function getCookies() {
     return new Promise((resolve) => {
@@ -147,12 +278,15 @@ async function getCookies() {
                 // 添加可能的父域名作为后备
                 if (currentDomain.includes('tiktok')) {
                     domains.push('.tiktok.com');
+                    domains.push('.tiktok.net');
+                    domains.push('.tiktokv.com');
                 } else if (currentDomain.includes('tokopedia')) {
                     domains.push('.tokopedia.com');
+                    domains.push('.tokopedia.net');
                 }
             } else {
                 // 没有当前域名时使用默认列表
-                domains = ['.tiktok.com', '.tokopedia.com'];
+                domains = ['.tiktok.com', '.tiktok.net', '.tokopedia.com', '.tokopedia.net'];
             }
 
             log('Cookie 查询域名: ' + domains.join(', '), 'info');
@@ -215,6 +349,9 @@ function processCookies(cookieArray) {
             'oec_seller_id_unified_seller_env',
             'global_seller_id_unified_seller_env',
             'oec_seller_id',
+            'SHOP_ID',
+            'UNIFIED_SELLER_TOKEN',
+            'SELLER_TOKEN',
             'SELLER_ID',
             'seller_id'
         ];

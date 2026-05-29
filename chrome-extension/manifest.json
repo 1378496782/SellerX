@@ -11,7 +11,9 @@
   ],
   "host_permissions": [
     "https://*.tiktok.com/*",
+    "https://*.tiktok.net/*",
     "https://*.tokopedia.com/*",
+    "https://*.tokopedia.net/*",
     "https://*.tiktokv.com/*",
     "https://github.com/*",
     "https://raw.githubusercontent.com/*"
