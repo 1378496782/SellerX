@@ -3,6 +3,8 @@ let cookies = '';
 let countryCode = '';
 let oecSellerId = '';
 let sellerId = '';
+let shopName = '';
+let shopCode = '';
 let allPromotions = [];
 
 // 活动类型映射
@@ -114,6 +116,8 @@ async function init() {
         }
 
         // 更新 UI
+        document.getElementById('shopName').textContent = shopName || '未获取到';
+        document.getElementById('shopCode').textContent = shopCode || '未获取到';
         document.getElementById('countryCode').textContent = countryCode || '未获取到';
         document.getElementById('sellerId').textContent = oecSellerId || sellerId || '未获取到';
 
@@ -223,6 +227,18 @@ async function getSellerInfoFromApi() {
                             countryCode = data.data.seller.shop_region.toUpperCase();
                             log('✓ 从 API 获取国家代码 (shop_region): ' + countryCode, 'success');
                         }
+
+                        // 获取店铺名称
+                        if (data.data.seller.shop_name) {
+                            shopName = data.data.seller.shop_name;
+                            log('✓ 从 API 获取店铺名称: ' + shopName, 'success');
+                        }
+
+                        // 获取店铺代码
+                        if (data.data.seller.shop_code) {
+                            shopCode = data.data.seller.shop_code;
+                            log('✓ 从 API 获取店铺代码: ' + shopCode, 'success');
+                        }
                     }
 
                     // 如果 seller 对象中没有，尝试从 global_seller 获取
@@ -317,49 +333,38 @@ async function getCookies() {
 
 // 处理 cookies
 function processCookies(cookieArray) {
-    log('获取到 ' + cookieArray.length + ' 个 cookies');
-
     if (cookieArray.length > 0) {
         cookies = cookieArray.map(c => c.name + '=' + c.value).join('; ');
 
-        // 提取 seller_id - 尝试多种可能的 cookie 名称
-        const cookieObj = {};
-        cookieArray.forEach(c => {
-            cookieObj[c.name] = c.value;
-        });
+        // 只有在还没有获取到 Seller ID 的时候，才从 Cookie 中尝试提取
+        if (!oecSellerId) {
+            // 提取 seller_id - 尝试多种可能的 cookie 名称
+            const cookieObj = {};
+            cookieArray.forEach(c => {
+                cookieObj[c.name] = c.value;
+            });
 
-        // 输出所有找到的 cookie 名称（用于调试）
-        const cookieNames = Object.keys(cookieObj).filter(name =>
-            name.toLowerCase().includes('seller') || name.toLowerCase().includes('shop') || name.toLowerCase().includes('id')
-        );
-        if (cookieNames.length > 0) {
-            log('找到相关 Cookie: ' + cookieNames.join(', '), 'info');
-            // 输出具体值
-            cookieNames.forEach(name => {
-                log(`  ${name}: ${cookieObj[name]}`, 'info');
+            // Seller ID 就是 oec_seller_id（按优先级）
+            const possibleSellerIds = [
+                'oec_seller_id_unified_seller_env',
+                'global_seller_id_unified_seller_env',
+                'oec_seller_id',
+                'SHOP_ID',
+                'UNIFIED_SELLER_TOKEN',
+                'SELLER_TOKEN',
+                'SELLER_ID',
+                'seller_id'
+            ];
+
+            // 按优先级设置 oec_sellerId 和 sellerId
+            possibleSellerIds.forEach(key => {
+                if (cookieObj[key] && !oecSellerId) {
+                    oecSellerId = cookieObj[key];
+                    sellerId = oecSellerId; // sellerId 就是 oec_sellerId
+                    log('✓ 从 cookie 获取 Seller ID (' + key + '): ' + oecSellerId, 'success');
+                }
             });
         }
-
-        // Seller ID 就是 oec_seller_id（按优先级）
-        const possibleSellerIds = [
-            'oec_seller_id_unified_seller_env',
-            'global_seller_id_unified_seller_env',
-            'oec_seller_id',
-            'SHOP_ID',
-            'UNIFIED_SELLER_TOKEN',
-            'SELLER_TOKEN',
-            'SELLER_ID',
-            'seller_id'
-        ];
-
-        // 按优先级设置 oec_sellerId 和 sellerId
-        possibleSellerIds.forEach(key => {
-            if (cookieObj[key] && !oecSellerId) {
-                oecSellerId = cookieObj[key];
-                sellerId = oecSellerId; // sellerId 就是 oec_sellerId
-                log('✓ 从 cookie 获取 Seller ID (' + key + '): ' + oecSellerId, 'success');
-            }
-        });
     }
 }
 
