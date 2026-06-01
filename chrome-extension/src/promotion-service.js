@@ -136,7 +136,8 @@ async function deletePromotionRecord({ promotion, promotionType, baseDomain, cou
     return {
         id: promotion.id,
         name: promotion.name,
-        type: deleteConfig.destroyType,
+        type: getPromotionDisplayName(promotion),
+        destroyType: deleteConfig.destroyType,
         success: isSuccess,
         status: response.data,
         logId,
@@ -246,9 +247,9 @@ export async function deletePromotions({ promotionFilter, log }) {
             deleteResults.push(result);
 
             if (result.success) {
-                log('  [' + (index + 1) + '/' + appState.allPromotions.length + '] 删除' + result.type + ' ID: ' + promotion.id + ', 名称: ' + promotion.name + ' - 成功' + ', logid: ' + result.logId, 'success');
+                log('  [' + (index + 1) + '/' + appState.allPromotions.length + '] 删除' + result.destroyType + ' ID: ' + promotion.id + ', 名称: ' + promotion.name + ' - 成功' + ', logid: ' + result.logId, 'success');
             } else {
-                log('  [' + (index + 1) + '/' + appState.allPromotions.length + '] 删除' + result.type + ' ID: ' + promotion.id + ', 名称: ' + promotion.name + ' - 失败: ' + result.error + ', logid: ' + result.logId, 'error');
+                log('  [' + (index + 1) + '/' + appState.allPromotions.length + '] 删除' + result.destroyType + ' ID: ' + promotion.id + ', 名称: ' + promotion.name + ' - 失败: ' + result.error + ', logid: ' + result.logId, 'error');
             }
         } catch (deleteError) {
             let destroyType = '活动';
@@ -261,7 +262,8 @@ export async function deletePromotions({ promotionFilter, log }) {
             deleteResults.push({
                 id: promotion.id,
                 name: promotion.name,
-                type: destroyType,
+                type: getPromotionDisplayName(promotion),
+                destroyType,
                 success: false,
                 error: deleteError.message
             });
@@ -315,9 +317,9 @@ export async function deleteSinglePromotion({ promotion, promotionFilter, log })
         });
 
         if (result.success) {
-            log('删除' + result.type + ' ID: ' + promotion.id + ', 名称: ' + (promotion.name || 'N/A') + ' - 成功, logid: ' + result.logId, 'success');
+            log('删除' + result.destroyType + ' ID: ' + promotion.id + ', 名称: ' + (promotion.name || 'N/A') + ' - 成功, logid: ' + result.logId, 'success');
         } else {
-            log('删除' + result.type + ' ID: ' + promotion.id + ', 名称: ' + (promotion.name || 'N/A') + ' - 失败: ' + result.error + ', logid: ' + result.logId, 'error');
+            log('删除' + result.destroyType + ' ID: ' + promotion.id + ', 名称: ' + (promotion.name || 'N/A') + ' - 失败: ' + result.error + ', logid: ' + result.logId, 'error');
         }
 
         return result;
@@ -333,7 +335,8 @@ export async function deleteSinglePromotion({ promotion, promotionFilter, log })
         const result = {
             id: promotion.id,
             name: promotion.name,
-            type: destroyType,
+            type: getPromotionDisplayName(promotion),
+            destroyType,
             success: false,
             error: deleteError.message
         };
