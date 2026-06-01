@@ -70,6 +70,12 @@ export const sellerIdCookieKeys = [
     'seller_id'
 ];
 
+export const authorContact = {
+    name: '张富伟',
+    openId: 'ou_873d43281881570cdc0757ba3b977775',
+    chatUrl: 'https://applink.feishu.cn/client/chat/open?openId=ou_873d43281881570cdc0757ba3b977775'
+};
+
 export function isVoucherType(type) {
     return type === 2;
 }

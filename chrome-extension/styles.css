@@ -64,6 +64,7 @@ body.expanded {
     white-space: nowrap;
 }
 
+.icon-link,
 .github-link {
     display: flex;
     align-items: center;
@@ -78,6 +79,17 @@ body.expanded {
     height: 32px;
 }
 
+.icon-link {
+    border: 0;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.contact-link {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.icon-link:hover,
 .github-link:hover {
     background: rgba(255, 255, 255, 0.25);
 }

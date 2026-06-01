@@ -1,4 +1,4 @@
-import { deletableStatusTabs, getPromotionDisplayName, queryStatusTabs, tabNames } from './config.js';
+import { authorContact, deletableStatusTabs, getPromotionDisplayName, queryStatusTabs, tabNames } from './config.js';
 
 export const dom = {};
 
@@ -11,6 +11,7 @@ export function cacheDom() {
     dom.queryBtn = document.getElementById('queryBtn');
     dom.deleteBtn = document.getElementById('deleteBtn');
     dom.checkUpdateBtn = document.getElementById('checkUpdateBtn');
+    dom.contactAuthorBtn = document.getElementById('contactAuthorBtn');
     dom.toggleRightPanelBtn = document.getElementById('toggleRightPanelBtn');
     dom.hideLogPanelBtn = document.getElementById('hideLogPanelBtn');
     dom.rightColumn = document.getElementById('rightColumn');
@@ -50,6 +51,7 @@ export function setupEventListeners(handlers) {
     dom.queryBtn.addEventListener('click', handlers.onQuery);
     dom.deleteBtn.addEventListener('click', handlers.onDelete);
     dom.checkUpdateBtn.addEventListener('click', handlers.onCheckUpdate);
+    dom.contactAuthorBtn.addEventListener('click', openAuthorChat);
     dom.toggleRightPanelBtn.addEventListener('click', toggleRightPanel);
     dom.hideLogPanelBtn.addEventListener('click', toggleRightPanel);
     dom.promotionType.addEventListener('change', handlers.onFilterChange);
@@ -57,6 +59,12 @@ export function setupEventListeners(handlers) {
     dom.clearLaneHeadersBtn.addEventListener('click', handlers.onClearLaneHeaders);
     document.querySelectorAll('#tabsGroup input[name="tab"]').forEach((input) => {
         input.addEventListener('change', handlers.onFilterChange);
+    });
+}
+
+function openAuthorChat() {
+    chrome.tabs.create({
+        url: authorContact.chatUrl
     });
 }
 
