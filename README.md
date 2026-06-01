@@ -2,7 +2,7 @@
 
 SellerX 是一个 Chrome Extension，用于批量查询、管理和删除 TikTok Shop Seller Center 店铺中的促销活动。
 
-当前版本：`v1.1.1`
+当前版本：`v1.1.2`
 
 ## 主要功能
 
@@ -13,6 +13,12 @@ SellerX 是一个 Chrome Extension，用于批量查询、管理和删除 TikTok
 - 支持批量删除 `Ongoing` 和 `Upcoming` 活动，并对不可删除状态进行保护。
 - 提供执行日志、删除结果汇总、成功/失败明细和一键复制结果。
 - 支持 GitHub Releases 自动发布，并可自动生成 `.zip`、`.crx` 和 `update.xml`。
+
+## v1.1.2 更新重点
+
+- 修复 Creator LIVE deal 查询逻辑，使用 `promotion_type=5` 搭配 `display_type=16` 区分 Flash Sale 与 Creator LIVE deal。
+- 查询结果中会根据 `display_type` 正确展示 Flash Sale / Creator LIVE deal。
+- 活动列表为 `Ongoing` 和 `Upcoming` 的单个活动/券新增独立删除按钮，支持逐条删除。
 
 ## v1.1.1 更新重点
 
@@ -101,7 +107,7 @@ SellerX 使用 `chrome-extension/update.xml` 配合 GitHub Releases 提供外部
 当前 `update.xml` 指向：
 
 ```text
-https://github.com/1378496782/SellerX/releases/download/v1.1.1/sellerx-extension.crx
+https://github.com/1378496782/SellerX/releases/download/v1.1.2/sellerx-extension.crx
 ```
 
 ## 项目结构
