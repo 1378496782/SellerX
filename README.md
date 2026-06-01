@@ -2,17 +2,31 @@
 
 SellerX 是一个 Chrome Extension，用于批量查询、管理和删除 TikTok Shop Seller Center 店铺中的促销活动。
 
-当前版本：`v1.1.2`
+当前版本：`v1.1.3`
 
 ## 主要功能
 
 - 自动识别当前 Seller Center 页面中的店铺信息，包括 `Seller ID`、`Shop Name`、`Shop Code` 和 `Region`。
 - 支持 TikTok 与 Tokopedia Seller Center 域名，覆盖 US、MX、ID 等多地区场景。
-- 支持多种促销活动类型筛选，例如 Product Discount、Flash Sale、Regular coupon、Promo Code 等。
-- 支持按状态查询活动：`All`、`Ongoing`、`Upcoming`、`Deactivated`、`Ended`。
+- 支持多种促销活动类型筛选，例如 Product Discount、Flash Sale、Creator LIVE deal、Regular coupon、Promo Code 等。
+- 支持按状态查询活动：`All`、`Ongoing & Upcoming`、`Ongoing`、`Upcoming`、`Deactivated`、`Ended`。
+- 支持自动捕获或手动配置泳道 Header，查询和删除可复用 `x-tt-env`、`x-use-ppe`。
 - 支持批量删除 `Ongoing` 和 `Upcoming` 活动，并对不可删除状态进行保护。
+- 支持列表内单条删除 `Ongoing` 和 `Upcoming` 活动。
 - 提供执行日志、删除结果汇总、成功/失败明细和一键复制结果。
+- 支持一键打开作者飞书聊天，便于反馈问题。
 - 支持 GitHub Releases 自动发布，并可自动生成 `.zip`、`.crx` 和 `update.xml`。
+
+## v1.1.3 更新重点
+
+- 新增 `Ongoing & Upcoming` 查询状态，并作为默认查询状态，只查询当前支持删除的 `Ongoing` 与 `Upcoming`。
+- 新增泳道 Header 管理：支持自动捕获或手动保存 `x-tt-env`、`x-use-ppe`，查询、批量删除和单条删除都会复用同一组 Header。
+- 优化泳道状态展示：使用 `Prod（线上）` / `PPE（自动/手动）` 标识当前请求环境，并在日志中同步输出。
+- 优化主界面布局：Shop Info 与 Configuration 合并为一个配置面板，中间使用分割线；日志展开后自动切换为上下布局。
+- 优化操作按钮：`查询活动` 改为更高对比度的绿色按钮，批量删除按钮文案从 `删除活动` 改为 `全部删除`。
+- 优化日志面板交互：日志开关固定在左上区域，日志面板标题右侧新增 `隐藏` 按钮。
+- 新增联系作者入口：顶部新增飞书聊天按钮，点击可直接打开与作者的飞书聊天窗口。
+- 删除结果中的类型展示为更详细的业务类型，例如 `Flash Sale`、`Creator LIVE deal`、`Shipping Discount`、`Buy More Save More`。
 
 ## v1.1.2 更新重点
 
@@ -84,12 +98,13 @@ cd SellerX
 4. 确认顶部 Shop Info 已正确识别店铺信息。
 5. 选择 Promotion Type 和查询状态。
 6. 点击「查询活动」。
-7. 确认活动列表后，在 `Ongoing` 或 `Upcoming` 状态下点击「删除活动」。
+7. 确认活动列表后，在 `Ongoing & Upcoming`、`Ongoing` 或 `Upcoming` 状态下点击「全部删除」，也可以点击单条活动右侧的「删除」。
 8. 在删除结果区域查看成功/失败明细，必要时点击「复制结果」进行问题反馈。
 
 ## 删除保护规则
 
-- `All`：可查询多个状态，但不会启用删除按钮。
+- `All`：可查询多个状态，但不会启用批量删除按钮。
+- `Ongoing & Upcoming`：默认查询状态，只查询可删除的进行中和未开始活动。
 - `Ongoing`：查询到活动后允许删除。
 - `Upcoming`：查询到活动后允许删除。
 - `Deactivated`：仅查询，不允许删除。
@@ -107,7 +122,7 @@ SellerX 使用 `chrome-extension/update.xml` 配合 GitHub Releases 提供外部
 当前 `update.xml` 指向：
 
 ```text
-https://github.com/1378496782/SellerX/releases/download/v1.1.2/sellerx-extension.crx
+https://github.com/1378496782/SellerX/releases/download/v1.1.3/sellerx-extension.crx
 ```
 
 ## 项目结构
@@ -159,7 +174,8 @@ CHROME_EXTENSION_PRIVATE_KEY
 ## 注意事项
 
 - 本工具会直接删除促销活动，请在操作前确认当前店铺、活动类型和查询状态。
-- 建议先使用 `All` 或具体状态查询并核对列表，再切换到可删除状态执行删除。
+- 建议优先使用 `Ongoing & Upcoming` 查询并核对列表，再执行删除。
+- 如果当前页面处于 PPE / 泳道环境，请确认环境卡片显示为 `PPE`；若未自动捕获，请手动填写 `x-tt-env` 和 `x-use-ppe`。
 - 如果删除失败，请复制删除结果并提供给作者排查。
 - 本项目主要用于内部效率工具场景，开发时间有限，可能仍存在边界问题。
 
