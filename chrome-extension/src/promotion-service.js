@@ -114,7 +114,7 @@ function describeResponseError(response) {
 function formatLaneHeadersForLog() {
     const laneHeaders = appState.laneHeaders || {};
     const entries = Object.entries(laneHeaders).filter(([, value]) => Boolean(value));
-    return entries.length ? entries.map(([key, value]) => key + '=' + value).join(', ') : '';
+    return entries.length ? 'PPE · ' + entries.map(([key, value]) => key + '=' + value).join(', ') : 'Prod（未使用泳道）';
 }
 
 async function deletePromotionRecord({ promotion, promotionType, baseDomain, countryCode, commonParams }) {
@@ -168,7 +168,7 @@ export async function queryPromotions({ promotionFilter, tabs, log }) {
     log('查询的 Tab: ' + tabs.map((tab) => tab + ' (' + (tabNames[tab] || '未知') + ')').join(', '));
     log('是否为券类型: ' + (isVoucherType(promotionType) ? '是' : '否'));
     log('是否为促销码类型: ' + (isPromoCodeType(promotionType) ? '是' : '否'));
-    log('泳道 Header: ' + (formatLaneHeadersForLog() || '未使用'));
+    log('泳道 Header: ' + formatLaneHeadersForLog());
     log('当前国家: ' + countryCode);
     log('最终配置 - 国家: ' + countryCode + ', 域名: ' + baseDomain + ', oec_seller_id: ' + effectiveSellerId + ', seller_id: ' + effectiveSellerId);
 
@@ -230,7 +230,7 @@ export async function deletePromotions({ promotionFilter, log }) {
     log('步骤2: 开始删除');
     log('========================================');
     log('待删除活动数: ' + appState.allPromotions.length);
-    log('泳道 Header: ' + (formatLaneHeadersForLog() || '未使用'));
+    log('泳道 Header: ' + formatLaneHeadersForLog());
 
     for (let index = 0; index < appState.allPromotions.length; index++) {
         const promotion = appState.allPromotions[index];
@@ -305,7 +305,7 @@ export async function deleteSinglePromotion({ promotion, promotionFilter, log })
     log('单条删除');
     log('========================================');
     log('待删除 ID: ' + promotion.id + ', 名称: ' + (promotion.name || 'N/A'));
-    log('泳道 Header: ' + (formatLaneHeadersForLog() || '未使用'));
+    log('泳道 Header: ' + formatLaneHeadersForLog());
 
     try {
         const result = await deletePromotionRecord({

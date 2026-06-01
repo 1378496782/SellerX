@@ -1,8 +1,11 @@
 // 后台脚本 - 处理 API 请求和跨域问题
 
 const laneHeaderNames = ['x-tt-env', 'x-use-ppe'];
+const latestLaneStorageKey = 'laneHeaders:latest';
+const laneHeaderMaxAgeMs = 30 * 60 * 1000;
 const laneHeadersByTabId = {};
 const laneHeadersByHost = {};
+let latestLaneHeaders = null;
 
 function getHostLaneStorageKey(host) {
     return 'laneHeaders:host:' + host;
@@ -35,6 +38,10 @@ function extractLaneHeaders(requestHeaders = []) {
     return laneHeaders;
 }
 
+function isFreshLaneRecord(record) {
+    return Boolean(record?.headers) && Date.now() - Number(record.capturedAt || 0) <= laneHeaderMaxAgeMs;
+}
+
 function cacheLaneHeaders(details) {
     const laneHeaders = extractLaneHeaders(details.requestHeaders);
     if (!Object.keys(laneHeaders).length) {
@@ -49,18 +56,37 @@ function cacheLaneHeaders(details) {
     }
 
     if (details.tabId >= 0) {
-        laneHeadersByTabId[details.tabId] = laneHeaders;
+        laneHeadersByTabId[details.tabId] = {
+            ...(laneHeadersByTabId[details.tabId] || {}),
+            ...laneHeaders
+        };
         chrome.storage.local.set({
-            [getTabLaneStorageKey(details.tabId)]: laneHeaders
+            [getTabLaneStorageKey(details.tabId)]: laneHeadersByTabId[details.tabId]
         });
     }
 
     if (host) {
-        laneHeadersByHost[host] = laneHeaders;
+        laneHeadersByHost[host] = {
+            ...(laneHeadersByHost[host] || {}),
+            ...laneHeaders
+        };
         chrome.storage.local.set({
-            [getHostLaneStorageKey(host)]: laneHeaders
+            [getHostLaneStorageKey(host)]: laneHeadersByHost[host]
         });
     }
+
+    latestLaneHeaders = {
+        headers: {
+            ...(latestLaneHeaders?.headers || {}),
+            ...laneHeaders
+        },
+        host,
+        tabId: details.tabId,
+        capturedAt: Date.now()
+    };
+    chrome.storage.local.set({
+        [latestLaneStorageKey]: latestLaneHeaders
+    });
 }
 
 chrome.webRequest.onBeforeSendHeaders.addListener(
@@ -211,7 +237,8 @@ async function getLaneHeaders(data = {}) {
     if (cachedHeaders) {
         return {
             success: true,
-            headers: cachedHeaders
+            headers: cachedHeaders,
+            source: 'tab/host'
         };
     }
 
@@ -222,12 +249,20 @@ async function getLaneHeaders(data = {}) {
     if (host) {
         storageKeys.push(getHostLaneStorageKey(host));
     }
+    storageKeys.push(latestLaneStorageKey);
 
     const stored = storageKeys.length ? await chrome.storage.local.get(storageKeys) : {};
-    const headers = (tabId !== undefined ? stored[getTabLaneStorageKey(tabId)] : null) || stored[getHostLaneStorageKey(host)] || {};
+    const storedLatest = stored[latestLaneStorageKey] || latestLaneHeaders || {};
+    const freshLatestHeaders = isFreshLaneRecord(storedLatest) ? storedLatest.headers : null;
+    const headers =
+        (tabId !== undefined ? stored[getTabLaneStorageKey(tabId)] : null) ||
+        stored[getHostLaneStorageKey(host)] ||
+        freshLatestHeaders ||
+        {};
 
     return {
         success: true,
-        headers
+        headers,
+        source: Object.keys(headers).length > 0 && freshLatestHeaders === headers ? 'latest' : 'storage'
     };
 }

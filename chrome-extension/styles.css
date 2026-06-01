@@ -130,27 +130,40 @@ body.expanded {
 .info-config-row {
     display: grid;
     grid-template-columns: 180px minmax(0, 1fr);
-    gap: 20px;
+    gap: 18px;
+    align-items: stretch;
+    background: #fff;
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
 }
 
 .info-config-row .info-section,
 .info-config-row .config-section {
-    margin-bottom: 16px;
+    background: transparent;
+    border-radius: 0;
+    padding: 0;
+    margin-bottom: 0;
+    box-shadow: none;
     min-width: 0;
 }
 
+.info-config-row .config-section {
+    border-left: 1px solid #edf0f5;
+    padding-left: 18px;
+}
+
 .single-info-box {
-    background: #f8f9fa;
-    border-radius: 8px;
-    padding: 12px;
+    display: grid;
+    gap: 8px;
 }
 
 .info-item-full {
-    margin-bottom: 10px;
-}
-
-.info-item-full:last-child {
-    margin-bottom: 0;
+    min-width: 0;
+    padding: 8px 10px;
+    background: #f8fafc;
+    border-radius: 7px;
 }
 
 .info-item-full .label {
@@ -171,7 +184,7 @@ body.expanded {
     font-size: 12px;
     font-weight: 600;
     color: #333;
-    word-break: break-all;
+    overflow-wrap: anywhere;
     font-family: monospace;
 }
 
@@ -193,8 +206,6 @@ body.expanded {
 }
 
 .section,
-.info-section,
-.config-section,
 .list-section,
 .result-section,
 .log-section {
@@ -300,41 +311,89 @@ body.expanded {
 
 .lane-config {
     margin-top: 10px;
+    margin-bottom: 0;
+}
+
+.lane-panel {
+    padding: 9px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: #f8fafc;
+}
+
+.lane-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.lane-panel-title {
+    color: #555;
+    font-size: 11px;
+    font-weight: 700;
 }
 
 .lane-input-row {
     display: grid;
-    grid-template-columns: 1fr 78px;
     gap: 6px;
 }
 
-.lane-input-row input {
+.form-group .lane-field {
+    display: grid;
+    grid-template-columns: 82px minmax(0, 1fr);
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 0;
+}
+
+.lane-field span {
+    min-width: 0;
+    padding: 7px 8px;
+    border-radius: 6px;
+    background: #eef1f5;
+    color: #333;
+    font-size: 11px;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.lane-field input {
     width: 100%;
     min-width: 0;
     padding: 7px 8px;
-    border: 1px solid #ddd;
+    border: 1px solid transparent;
     border-radius: 6px;
+    background: #fff;
     font-size: 11px;
     outline: none;
 }
 
-.lane-input-row input:focus {
-    border-color: #667eea;
+.lane-field input:focus {
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.16);
+}
+
+.lane-field input::placeholder {
+    color: #b8bec8;
+    font-style: italic;
 }
 
 .lane-actions {
-    display: grid;
-    grid-template-columns: 64px 64px;
+    display: flex;
     align-items: center;
+    justify-content: flex-end;
     gap: 6px;
-    margin-top: 6px;
+    margin-top: 8px;
 }
 
 .mini-btn {
-    width: 64px;
-    min-height: 34px;
-    padding: 5px 8px;
-    border: 1px solid #ddd;
+    min-height: 28px;
+    padding: 5px 12px;
+    border: 1px solid #d6dbe3;
     border-radius: 6px;
     background: #fff;
     color: #555;
@@ -349,14 +408,35 @@ body.expanded {
 }
 
 .lane-status {
-    display: block;
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
     min-width: 0;
-    margin-top: 6px;
-    color: #666;
-    font-size: 11px;
+    padding: 3px 7px;
+    border-radius: 999px;
+    background: #dcfce7;
+    color: #15803d;
+    font-size: 10px;
+    font-weight: 700;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.lane-status.ppe {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.left-column.shrink .info-config-row {
+    grid-template-columns: 1fr;
+}
+
+.left-column.shrink .info-config-row .config-section {
+    border-left: 0;
+    border-top: 1px solid #edf0f5;
+    padding-left: 0;
+    padding-top: 12px;
 }
 
 .action-section {

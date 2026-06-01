@@ -100,11 +100,16 @@ export function renderLaneHeaders(headers = {}, source = '') {
     const usePpe = headers['x-use-ppe'] || '';
     dom.laneEnvInput.value = env;
     dom.laneUsePpeInput.value = usePpe;
+    dom.laneHeadersStatus.classList.toggle('ppe', Boolean(env || usePpe));
 
     if (env || usePpe) {
-        dom.laneHeadersStatus.textContent = (source ? source + ': ' : '') + [env, usePpe].filter(Boolean).join(' / ');
+        const sourceLabel = source ? source : '泳道';
+        const detail = [env, usePpe].filter(Boolean).join(' / ');
+        dom.laneHeadersStatus.textContent = 'PPE（' + sourceLabel + '）';
+        dom.laneHeadersStatus.title = detail;
     } else {
-        dom.laneHeadersStatus.textContent = '未使用';
+        dom.laneHeadersStatus.textContent = 'Prod（线上）';
+        dom.laneHeadersStatus.title = '未使用泳道 Header';
     }
 }
 

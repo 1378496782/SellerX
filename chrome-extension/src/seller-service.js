@@ -172,11 +172,12 @@ export async function getLaneHeaders(log) {
     setLaneHeaders(effectiveLaneHeaders);
 
     if (Object.keys(laneHeaders).length > 0) {
-        log('✓ 已自动捕获泳道 Header: ' + Object.entries(laneHeaders).map(([key, value]) => key + '=' + value).join(', '), 'success');
+        const sourceLabel = response?.source ? '（' + response.source + '）' : '';
+        log('✓ 已自动捕获泳道 Header' + sourceLabel + ': ' + Object.entries(laneHeaders).map(([key, value]) => key + '=' + value).join(', '), 'success');
     } else if (Object.keys(manualLaneHeaders).length > 0) {
         log('✓ 使用手动配置的泳道 Header: ' + Object.entries(manualLaneHeaders).map(([key, value]) => key + '=' + value).join(', '), 'success');
     } else {
-        log('未捕获到泳道 Header，也没有手动配置，将按当前默认环境请求。', 'warning');
+        log('未自动捕获到泳道 Header，将按 Prod 请求。若 DevTools 能看到 X-Tt-Env / X-Use-Ppe，说明可能是其他扩展在最终发送前注入，SellerX 无法稳定读取，请手动填写一次。', 'warning');
     }
 
     return {
