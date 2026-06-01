@@ -61,14 +61,12 @@ SellerX 是一个 Chrome Extension，用于批量查询、管理和删除 TikTok
 
 ### 方法 1：从 GitHub Releases 下载
 
-1. 打开 [SellerX Releases](https://github.com/1378496782/SellerX/releases)。
-2. 下载最新版本中的 `sellerx-extension.zip` 或 `sellerx-extension.crx`。
-3. 如果使用 `.zip`，先解压到本地文件夹。
-4. 打开 Chrome，进入 `chrome://extensions/`。
-5. 开启右上角「开发者模式」。
-6. 点击「加载已解压的扩展程序」，选择解压后的 `chrome-extension` 文件夹。
+推荐使用 `sellerx-extension.zip` 安装。
 
-说明：Chrome 对直接拖拽安装 `.crx` 有安全限制。如果 `.crx` 无法直接安装，推荐使用 `.zip` 解压后以开发者模式加载。
+1. 打开 [SellerX Releases](https://github.com/1378496782/SellerX/releases)。
+2. 下载最新版本中的 `sellerx-extension.zip`。
+3. 打开 Chrome，进入 `chrome://extensions/`。
+4. 将 zip 拖动到「所有扩展程序」页面。
 
 ### 方法 2：从源码安装
 
