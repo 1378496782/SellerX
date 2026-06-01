@@ -114,6 +114,10 @@ export function getSelectedTabs() {
         return queryStatusTabs;
     }
 
+    if (selected === 'active') {
+        return deletableStatusTabs;
+    }
+
     return [parseInt(selected, 10)];
 }
 
@@ -125,6 +129,10 @@ export function canDeleteSelectedStatus() {
     const selected = getSelectedStatusValue();
     if (selected === 'all') {
         return false;
+    }
+
+    if (selected === 'active') {
+        return true;
     }
 
     return deletableStatusTabs.includes(parseInt(selected, 10));

@@ -32,6 +32,7 @@ export const promotionFilterOptions = {
 
 export const tabNames = {
     all: 'All',
+    active: 'Ongoing & Upcoming',
     2: 'Ongoing',
     3: 'Upcoming',
     4: 'Deactivated',
