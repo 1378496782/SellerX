@@ -7,7 +7,7 @@
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    width: 450px;
+    width: 520px;
     height: auto;
     margin: 0;
     transition: width 0.3s ease;
@@ -30,8 +30,7 @@ body.expanded {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 15px;
-    max-width: 410px;
-    /* 固定最大宽度，不受页面展开影响 */
+    max-width: 100%;
 }
 
 .header-left {
@@ -129,14 +128,15 @@ body.expanded {
 }
 
 .info-config-row {
-    display: flex;
+    display: grid;
+    grid-template-columns: 180px minmax(0, 1fr);
     gap: 20px;
 }
 
 .info-config-row .info-section,
 .info-config-row .config-section {
-    flex: 1;
     margin-bottom: 16px;
+    min-width: 0;
 }
 
 .single-info-box {
@@ -323,13 +323,16 @@ body.expanded {
 }
 
 .lane-actions {
-    display: flex;
+    display: grid;
+    grid-template-columns: 64px 64px;
     align-items: center;
     gap: 6px;
     margin-top: 6px;
 }
 
 .mini-btn {
+    width: 64px;
+    min-height: 34px;
     padding: 5px 8px;
     border: 1px solid #ddd;
     border-radius: 6px;
@@ -337,6 +340,7 @@ body.expanded {
     color: #555;
     font-size: 11px;
     cursor: pointer;
+    white-space: nowrap;
 }
 
 .mini-btn:hover {
@@ -345,7 +349,9 @@ body.expanded {
 }
 
 .lane-status {
+    display: block;
     min-width: 0;
+    margin-top: 6px;
     color: #666;
     font-size: 11px;
     overflow: hidden;
