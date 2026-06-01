@@ -122,6 +122,11 @@ function getPromotionStatusName(promotion) {
     return tabNames[promotion.fromTab] || tabNames[promotion.status] || '未知';
 }
 
+function canDeletePromotionItem(promotion) {
+    const status = Number(promotion.fromTab || promotion.status);
+    return deletableStatusTabs.includes(status);
+}
+
 function getPromotionTime(promotion, keys) {
     for (const key of keys) {
         const value = promotion[key];
@@ -149,7 +154,7 @@ function formatPromotionTime(value) {
     return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleString();
 }
 
-export function renderPromotionList(promotions) {
+export function renderPromotionList(promotions, handlers = {}) {
     dom.promotionList.replaceChildren();
 
     if (!promotions.length) {
@@ -187,6 +192,17 @@ export function renderPromotionList(promotions) {
         info.appendChild(titleRow);
         info.appendChild(metaGrid);
         item.appendChild(info);
+
+        if (canDeletePromotionItem(promotion) && handlers.onDeletePromotion) {
+            const deleteButton = document.createElement('button');
+            deleteButton.type = 'button';
+            deleteButton.className = 'single-delete-btn';
+            deleteButton.textContent = '删除';
+            deleteButton.title = '删除当前活动';
+            deleteButton.addEventListener('click', () => handlers.onDeletePromotion(promotion, deleteButton));
+            item.appendChild(deleteButton);
+        }
+
         dom.promotionList.appendChild(item);
     });
 }

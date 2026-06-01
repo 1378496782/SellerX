@@ -1,8 +1,8 @@
 import { cacheDom, canDeleteSelectedStatus, getSelectedPromotionFilter, getSelectedTabs, hideLogPanel, hideResult, renderCurrentVersion, renderPromotionList, renderShopInfo, renderVersion, setDeleteButtonEnabled, setUpdateButtonLoading, setupEventListeners, showDeleteResult, showLoading } from './src/dom.js';
 import { log } from './src/logger.js';
 import { getCookies, getCurrentPageInfo, getSellerInfoFromApi } from './src/seller-service.js';
-import { appState } from './src/state.js';
-import { canRunPromotionAction, deletePromotions as deletePromotionRecords, queryPromotions as queryPromotionRecords } from './src/promotion-service.js';
+import { appState, setPromotions } from './src/state.js';
+import { canRunPromotionAction, deletePromotions as deletePromotionRecords, deleteSinglePromotion as deleteSinglePromotionRecord, queryPromotions as queryPromotionRecords } from './src/promotion-service.js';
 
 async function init() {
     showLoading(true);
@@ -77,7 +77,9 @@ async function queryPromotions() {
             log
         });
 
-        renderPromotionList(promotions);
+        renderPromotionList(promotions, {
+            onDeletePromotion: deleteSinglePromotion
+        });
         setDeleteButtonEnabled(promotions.length > 0 && canDeleteSelectedStatus());
     } catch (error) {
         log('查询失败: ' + error.message, 'error');
@@ -117,6 +119,45 @@ async function deletePromotions() {
     }
 
     showLoading(false);
+}
+
+async function deleteSinglePromotion(promotion, button) {
+    const originalText = button?.textContent || '删除';
+
+    if (button) {
+        button.disabled = true;
+        button.textContent = '删除中';
+    }
+
+    try {
+        const result = await deleteSinglePromotionRecord({
+            promotion,
+            promotionFilter: getSelectedPromotionFilter(),
+            log
+        });
+
+        showDeleteResult([result]);
+
+        if (result.success) {
+            setPromotions(appState.allPromotions.filter((item) => item.id !== promotion.id));
+            renderPromotionList(appState.allPromotions, {
+                onDeletePromotion: deleteSinglePromotion
+            });
+            setDeleteButtonEnabled(appState.allPromotions.length > 0 && canDeleteSelectedStatus());
+        } else if (button) {
+            button.disabled = false;
+            button.textContent = originalText;
+        }
+    } catch (error) {
+        log('单条删除失败: ' + error.message, 'error');
+        console.error('单条删除失败:', error);
+        alert('单条删除失败: ' + error.message);
+
+        if (button) {
+            button.disabled = false;
+            button.textContent = originalText;
+        }
+    }
 }
 
 function handleFilterChange() {

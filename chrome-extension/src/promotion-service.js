@@ -103,6 +103,33 @@ function describeResponseError(response) {
     return parts.length ? parts.join(' / ') + ': ' + message : message;
 }
 
+async function deletePromotionRecord({ promotion, promotionType, baseDomain, countryCode, commonParams }) {
+    const actualType = promotion.realPromotionType || promotion.promotion_type || promotionType;
+    const deleteConfig = getDeleteRequestConfig(baseDomain, commonParams, promotion, actualType);
+    const refererUrl = buildRefererUrl(baseDomain, countryCode, promotion.fromTab || promotion.status, promotionType);
+    const headers = buildHeaders(baseDomain, countryCode, refererUrl);
+
+    const response = await sendRuntimeMessage('deletePromotion', {
+        url: deleteConfig.url,
+        headers,
+        requestBody: deleteConfig.requestBody
+    });
+
+    const isSuccess = response.success && response.data && response.data.code === 0;
+    const logId = response.logId || 'N/A';
+    const errorMessage = isSuccess ? '' : describeResponseError(response);
+
+    return {
+        id: promotion.id,
+        name: promotion.name,
+        type: deleteConfig.destroyType,
+        success: isSuccess,
+        status: response.data,
+        logId,
+        error: errorMessage
+    };
+}
+
 export function canRunPromotionAction() {
     return Boolean(appState.countryCode && getEffectiveSellerId());
 }
@@ -193,34 +220,19 @@ export async function deletePromotions({ promotionFilter, log }) {
         const actualType = promotion.realPromotionType || promotionType;
 
         try {
-            const deleteConfig = getDeleteRequestConfig(baseDomain, commonParams, promotion, actualType);
-            const refererUrl = buildRefererUrl(baseDomain, countryCode, promotion.fromTab, promotionType);
-            const headers = buildHeaders(baseDomain, countryCode, refererUrl);
-
-            const response = await sendRuntimeMessage('deletePromotion', {
-                url: deleteConfig.url,
-                headers,
-                requestBody: deleteConfig.requestBody
+            const result = await deletePromotionRecord({
+                promotion,
+                promotionType,
+                baseDomain,
+                countryCode,
+                commonParams
             });
+            deleteResults.push(result);
 
-            const isSuccess = response.success && response.data && response.data.code === 0;
-            const logId = response.logId || 'N/A';
-            const errorMessage = isSuccess ? '' : describeResponseError(response);
-
-            deleteResults.push({
-                id: promotion.id,
-                name: promotion.name,
-                type: deleteConfig.destroyType,
-                success: isSuccess,
-                status: response.data,
-                logId,
-                error: errorMessage
-            });
-
-            if (isSuccess) {
-                log('  [' + (index + 1) + '/' + appState.allPromotions.length + '] 删除' + deleteConfig.destroyType + ' ID: ' + promotion.id + ', 名称: ' + promotion.name + ' - 成功' + ', logid: ' + logId, 'success');
+            if (result.success) {
+                log('  [' + (index + 1) + '/' + appState.allPromotions.length + '] 删除' + result.type + ' ID: ' + promotion.id + ', 名称: ' + promotion.name + ' - 成功' + ', logid: ' + result.logId, 'success');
             } else {
-                log('  [' + (index + 1) + '/' + appState.allPromotions.length + '] 删除' + deleteConfig.destroyType + ' ID: ' + promotion.id + ', 名称: ' + promotion.name + ' - 失败: ' + errorMessage + ', logid: ' + logId, 'error');
+                log('  [' + (index + 1) + '/' + appState.allPromotions.length + '] 删除' + result.type + ' ID: ' + promotion.id + ', 名称: ' + promotion.name + ' - 失败: ' + result.error + ', logid: ' + result.logId, 'error');
             }
         } catch (deleteError) {
             let destroyType = '活动';
@@ -260,4 +272,55 @@ export async function deletePromotions({ promotionFilter, log }) {
 
     clearPromotions();
     return deleteResults;
+}
+
+export async function deleteSinglePromotion({ promotion, promotionFilter, log }) {
+    const countryCode = appState.countryCode;
+    const effectiveSellerId = getEffectiveSellerId();
+    const baseDomain = getBaseDomain(countryCode);
+    const commonParams = buildCommonParams(countryCode, effectiveSellerId);
+    const filterConfig = getPromotionFilterConfig(promotionFilter);
+    const promotionType = filterConfig.promotionType;
+
+    log('');
+    log('========================================');
+    log('单条删除');
+    log('========================================');
+    log('待删除 ID: ' + promotion.id + ', 名称: ' + (promotion.name || 'N/A'));
+
+    try {
+        const result = await deletePromotionRecord({
+            promotion,
+            promotionType,
+            baseDomain,
+            countryCode,
+            commonParams
+        });
+
+        if (result.success) {
+            log('删除' + result.type + ' ID: ' + promotion.id + ', 名称: ' + (promotion.name || 'N/A') + ' - 成功, logid: ' + result.logId, 'success');
+        } else {
+            log('删除' + result.type + ' ID: ' + promotion.id + ', 名称: ' + (promotion.name || 'N/A') + ' - 失败: ' + result.error + ', logid: ' + result.logId, 'error');
+        }
+
+        return result;
+    } catch (deleteError) {
+        let destroyType = '活动';
+        const actualType = promotion.realPromotionType || promotion.promotion_type || promotionType;
+        if (isVoucherType(actualType)) {
+            destroyType = '券';
+        } else if (isPromoCodeType(actualType)) {
+            destroyType = '促销码';
+        }
+
+        const result = {
+            id: promotion.id,
+            name: promotion.name,
+            type: destroyType,
+            success: false,
+            error: deleteError.message
+        };
+        log('删除' + destroyType + ' ID: ' + promotion.id + ', 名称: ' + (promotion.name || 'N/A') + ' - 失败: ' + deleteError.message, 'error');
+        return result;
+    }
 }
