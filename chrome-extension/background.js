@@ -1,11 +1,110 @@
 // 后台脚本 - 处理 API 请求和跨域问题
 
+const laneHeaderNames = ['x-tt-env', 'x-use-ppe'];
+const laneHeadersByTabId = {};
+const laneHeadersByHost = {};
+
+function getHostLaneStorageKey(host) {
+    return 'laneHeaders:host:' + host;
+}
+
+function getTabLaneStorageKey(tabId) {
+    return 'laneHeaders:tab:' + tabId;
+}
+
+function normalizeHeaderName(name) {
+    return String(name || '').toLowerCase();
+}
+
+function extractLaneHeaders(requestHeaders = []) {
+    const laneHeaders = {};
+
+    requestHeaders.forEach((header) => {
+        const normalizedName = normalizeHeaderName(header.name);
+        if (!laneHeaderNames.includes(normalizedName) || !header.value) {
+            return;
+        }
+
+        if (normalizedName === 'x-tt-env') {
+            laneHeaders['x-tt-env'] = header.value;
+        } else if (normalizedName === 'x-use-ppe') {
+            laneHeaders['x-use-ppe'] = header.value;
+        }
+    });
+
+    return laneHeaders;
+}
+
+function cacheLaneHeaders(details) {
+    const laneHeaders = extractLaneHeaders(details.requestHeaders);
+    if (!Object.keys(laneHeaders).length) {
+        return;
+    }
+
+    let host = '';
+    try {
+        host = new URL(details.url).hostname;
+    } catch (error) {
+        host = '';
+    }
+
+    if (details.tabId >= 0) {
+        laneHeadersByTabId[details.tabId] = laneHeaders;
+        chrome.storage.local.set({
+            [getTabLaneStorageKey(details.tabId)]: laneHeaders
+        });
+    }
+
+    if (host) {
+        laneHeadersByHost[host] = laneHeaders;
+        chrome.storage.local.set({
+            [getHostLaneStorageKey(host)]: laneHeaders
+        });
+    }
+}
+
+chrome.webRequest.onBeforeSendHeaders.addListener(
+    cacheLaneHeaders,
+    {
+        urls: [
+            'https://*.tiktok.com/*',
+            'https://*.tiktok.net/*',
+            'https://*.tokopedia.com/*',
+            'https://*.tokopedia.net/*',
+            'https://*.tiktokv.com/*'
+        ]
+    },
+    ['requestHeaders', 'extraHeaders']
+);
+
+chrome.webRequest.onSendHeaders.addListener(
+    cacheLaneHeaders,
+    {
+        urls: [
+            'https://*.tiktok.com/*',
+            'https://*.tiktok.net/*',
+            'https://*.tokopedia.com/*',
+            'https://*.tokopedia.net/*',
+            'https://*.tiktokv.com/*'
+        ]
+    },
+    ['requestHeaders', 'extraHeaders']
+);
+
+chrome.tabs.onRemoved.addListener((tabId) => {
+    delete laneHeadersByTabId[tabId];
+    chrome.storage.local.remove(getTabLaneStorageKey(tabId));
+});
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === 'fetchPromotions') {
         fetchPromotions(request.data).then(sendResponse);
         return true;
     } else if (request.action === 'deletePromotion') {
         deletePromotion(request.data).then(sendResponse);
+        return true;
+    } else if (request.action === 'getLaneHeaders') {
+        getLaneHeaders(request.data).then(sendResponse);
         return true;
     }
 });
@@ -103,4 +202,32 @@ async function deletePromotion(data) {
             error: error.message
         };
     }
+}
+
+async function getLaneHeaders(data = {}) {
+    const tabId = data.tabId;
+    const host = data.host || data.baseDomain || '';
+    const cachedHeaders = (tabId !== undefined ? laneHeadersByTabId[tabId] : null) || laneHeadersByHost[host];
+    if (cachedHeaders) {
+        return {
+            success: true,
+            headers: cachedHeaders
+        };
+    }
+
+    const storageKeys = [];
+    if (tabId !== undefined) {
+        storageKeys.push(getTabLaneStorageKey(tabId));
+    }
+    if (host) {
+        storageKeys.push(getHostLaneStorageKey(host));
+    }
+
+    const stored = storageKeys.length ? await chrome.storage.local.get(storageKeys) : {};
+    const headers = (tabId !== undefined ? stored[getTabLaneStorageKey(tabId)] : null) || stored[getHostLaneStorageKey(host)] || {};
+
+    return {
+        success: true,
+        headers
+    };
 }

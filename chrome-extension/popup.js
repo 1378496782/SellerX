@@ -1,6 +1,6 @@
-import { cacheDom, canDeleteSelectedStatus, getSelectedPromotionFilter, getSelectedTabs, hideLogPanel, hideResult, renderCurrentVersion, renderPromotionList, renderShopInfo, renderVersion, setDeleteButtonEnabled, setUpdateButtonLoading, setupEventListeners, showDeleteResult, showLoading } from './src/dom.js';
+import { cacheDom, canDeleteSelectedStatus, getLaneHeaderInputValues, getSelectedPromotionFilter, getSelectedTabs, hideLogPanel, hideResult, renderCurrentVersion, renderLaneHeaders, renderPromotionList, renderShopInfo, renderVersion, setDeleteButtonEnabled, setUpdateButtonLoading, setupEventListeners, showDeleteResult, showLoading } from './src/dom.js';
 import { log } from './src/logger.js';
-import { getCookies, getCurrentPageInfo, getSellerInfoFromApi } from './src/seller-service.js';
+import { clearManualLaneHeaders, getCookies, getCurrentPageInfo, getLaneHeaders, getSellerInfoFromApi, saveManualLaneHeaders } from './src/seller-service.js';
 import { appState, setPromotions } from './src/state.js';
 import { canRunPromotionAction, deletePromotions as deletePromotionRecords, deleteSinglePromotion as deleteSinglePromotionRecord, queryPromotions as queryPromotionRecords } from './src/promotion-service.js';
 
@@ -18,6 +18,10 @@ async function init() {
 
         log('--- 获取 Cookie（用于后续请求） ---', 'info');
         await getCookies(log);
+
+        log('--- 获取泳道 Header（用于后续请求） ---', 'info');
+        const laneResult = await getLaneHeaders(log);
+        renderLaneHeaders(laneResult.headers, laneResult.source);
 
         if (!appState.oecSellerId || !appState.countryCode) {
             log('--- 补充获取信息（API 未完全获取） ---', 'info');
@@ -160,6 +164,16 @@ async function deleteSinglePromotion(promotion, button) {
     }
 }
 
+async function saveLaneHeaders() {
+    const headers = await saveManualLaneHeaders(getLaneHeaderInputValues(), log);
+    renderLaneHeaders(headers, '手动');
+}
+
+async function clearLaneHeaders() {
+    await clearManualLaneHeaders(log);
+    renderLaneHeaders({}, '');
+}
+
 function handleFilterChange() {
     setDeleteButtonEnabled(false);
 }
@@ -171,6 +185,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         onQuery: queryPromotions,
         onDelete: deletePromotions,
         onCheckUpdate: checkForUpdates,
-        onFilterChange: handleFilterChange
+        onFilterChange: handleFilterChange,
+        onSaveLaneHeaders: saveLaneHeaders,
+        onClearLaneHeaders: clearLaneHeaders
     });
 });

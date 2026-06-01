@@ -1,6 +1,8 @@
 import { extractRegionFromUrl, getDomainFamily, sellerDomains, sellerIdCookieKeys } from './config.js';
-import { getCookiesByDomain, getCurrentTab } from './api-client.js';
-import { appState, setCookies, setSellerInfo } from './state.js';
+import { getCookiesByDomain, getCurrentTab, getStorageValues, removeStorageValues, sendRuntimeMessage, setStorageValues } from './api-client.js';
+import { appState, setCookies, setLaneHeaders, setSellerInfo } from './state.js';
+
+const manualLaneHeadersStorageKey = 'manualLaneHeaders';
 
 function buildCookieDomains(currentDomain) {
     if (!currentDomain) {
@@ -150,7 +152,63 @@ export async function getCookies(log) {
     processCookies(cookieGroups.flat(), log);
 }
 
-function processCookies(cookieArray, log) {
+export async function getLaneHeaders(log) {
+    const tab = await getCurrentTab();
+    if (!tab || !tab.url) {
+        log('无法获取当前页面信息，跳过泳道 Header 获取', 'warning');
+        return;
+    }
+
+    const host = new URL(tab.url).hostname;
+    const response = await sendRuntimeMessage('getLaneHeaders', {
+        tabId: tab.id,
+        host
+    });
+    const laneHeaders = response?.headers || {};
+    const stored = await getStorageValues([manualLaneHeadersStorageKey]);
+    const manualLaneHeaders = stored[manualLaneHeadersStorageKey] || {};
+    const effectiveLaneHeaders = Object.keys(laneHeaders).length > 0 ? laneHeaders : manualLaneHeaders;
+
+    setLaneHeaders(effectiveLaneHeaders);
+
+    if (Object.keys(laneHeaders).length > 0) {
+        log('✓ 已自动捕获泳道 Header: ' + Object.entries(laneHeaders).map(([key, value]) => key + '=' + value).join(', '), 'success');
+    } else if (Object.keys(manualLaneHeaders).length > 0) {
+        log('✓ 使用手动配置的泳道 Header: ' + Object.entries(manualLaneHeaders).map(([key, value]) => key + '=' + value).join(', '), 'success');
+    } else {
+        log('未捕获到泳道 Header，也没有手动配置，将按当前默认环境请求。', 'warning');
+    }
+
+    return {
+        headers: effectiveLaneHeaders,
+        source: Object.keys(laneHeaders).length > 0 ? '自动' : (Object.keys(manualLaneHeaders).length > 0 ? '手动' : '')
+    };
+}
+
+export async function saveManualLaneHeaders(headers, log) {
+    const normalizedHeaders = {};
+    if (headers['x-tt-env']) {
+        normalizedHeaders['x-tt-env'] = headers['x-tt-env'];
+    }
+    if (headers['x-use-ppe']) {
+        normalizedHeaders['x-use-ppe'] = headers['x-use-ppe'];
+    }
+
+    await setStorageValues({
+        [manualLaneHeadersStorageKey]: normalizedHeaders
+    });
+    setLaneHeaders(normalizedHeaders);
+    log('✓ 已保存手动泳道 Header: ' + (Object.entries(normalizedHeaders).map(([key, value]) => key + '=' + value).join(', ') || '空'), 'success');
+    return normalizedHeaders;
+}
+
+export async function clearManualLaneHeaders(log) {
+    await removeStorageValues([manualLaneHeadersStorageKey]);
+    setLaneHeaders({});
+    log('已清空手动泳道 Header', 'warning');
+}
+
+export function processCookies(cookieArray, log) {
     if (!cookieArray.length) {
         return;
     }

@@ -5,6 +5,7 @@ export const appState = {
     sellerId: '',
     shopName: '',
     shopCode: '',
+    laneHeaders: {},
     allPromotions: []
 };
 
@@ -37,6 +38,10 @@ export function setSellerInfo(info = {}) {
 
 export function setCookies(cookieHeader) {
     appState.cookies = cookieHeader || '';
+}
+
+export function setLaneHeaders(headers) {
+    appState.laneHeaders = headers && typeof headers === 'object' ? headers : {};
 }
 
 export function setPromotions(promotions) {

@@ -19,6 +19,11 @@ export function cacheDom() {
     dom.promotionList = document.getElementById('promotionList');
     dom.loading = document.getElementById('loading');
     dom.promotionType = document.getElementById('promotionType');
+    dom.laneEnvInput = document.getElementById('laneEnvInput');
+    dom.laneUsePpeInput = document.getElementById('laneUsePpeInput');
+    dom.saveLaneHeadersBtn = document.getElementById('saveLaneHeadersBtn');
+    dom.clearLaneHeadersBtn = document.getElementById('clearLaneHeadersBtn');
+    dom.laneHeadersStatus = document.getElementById('laneHeadersStatus');
 }
 
 export function hideLogPanel() {
@@ -46,6 +51,8 @@ export function setupEventListeners(handlers) {
     dom.checkUpdateBtn.addEventListener('click', handlers.onCheckUpdate);
     dom.toggleRightPanelBtn.addEventListener('click', toggleRightPanel);
     dom.promotionType.addEventListener('change', handlers.onFilterChange);
+    dom.saveLaneHeadersBtn.addEventListener('click', handlers.onSaveLaneHeaders);
+    dom.clearLaneHeadersBtn.addEventListener('click', handlers.onClearLaneHeaders);
     document.querySelectorAll('#tabsGroup input[name="tab"]').forEach((input) => {
         input.addEventListener('change', handlers.onFilterChange);
     });
@@ -79,6 +86,26 @@ export function setDeleteButtonEnabled(enabled) {
 
 export function getSelectedPromotionFilter() {
     return dom.promotionType.value;
+}
+
+export function getLaneHeaderInputValues() {
+    return {
+        'x-tt-env': dom.laneEnvInput.value.trim(),
+        'x-use-ppe': dom.laneUsePpeInput.value.trim()
+    };
+}
+
+export function renderLaneHeaders(headers = {}, source = '') {
+    const env = headers['x-tt-env'] || '';
+    const usePpe = headers['x-use-ppe'] || '';
+    dom.laneEnvInput.value = env;
+    dom.laneUsePpeInput.value = usePpe;
+
+    if (env || usePpe) {
+        dom.laneHeadersStatus.textContent = (source ? source + ': ' : '') + [env, usePpe].filter(Boolean).join(' / ');
+    } else {
+        dom.laneHeadersStatus.textContent = '未使用';
+    }
 }
 
 export function getSelectedTabs() {

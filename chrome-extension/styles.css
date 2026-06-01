@@ -298,6 +298,61 @@ body.expanded {
     border-color: #667eea;
 }
 
+.lane-config {
+    margin-top: 10px;
+}
+
+.lane-input-row {
+    display: grid;
+    grid-template-columns: 1fr 78px;
+    gap: 6px;
+}
+
+.lane-input-row input {
+    width: 100%;
+    min-width: 0;
+    padding: 7px 8px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 11px;
+    outline: none;
+}
+
+.lane-input-row input:focus {
+    border-color: #667eea;
+}
+
+.lane-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+}
+
+.mini-btn {
+    padding: 5px 8px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background: #fff;
+    color: #555;
+    font-size: 11px;
+    cursor: pointer;
+}
+
+.mini-btn:hover {
+    border-color: #667eea;
+    color: #4f46e5;
+}
+
+.lane-status {
+    min-width: 0;
+    color: #666;
+    font-size: 11px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .action-section {
     display: flex;
     gap: 10px;
