@@ -12,6 +12,7 @@ export function cacheDom() {
     dom.deleteBtn = document.getElementById('deleteBtn');
     dom.checkUpdateBtn = document.getElementById('checkUpdateBtn');
     dom.toggleRightPanelBtn = document.getElementById('toggleRightPanelBtn');
+    dom.hideLogPanelBtn = document.getElementById('hideLogPanelBtn');
     dom.rightColumn = document.getElementById('rightColumn');
     dom.leftColumn = document.querySelector('.left-column');
     dom.resultSection = document.getElementById('resultSection');
@@ -50,6 +51,7 @@ export function setupEventListeners(handlers) {
     dom.deleteBtn.addEventListener('click', handlers.onDelete);
     dom.checkUpdateBtn.addEventListener('click', handlers.onCheckUpdate);
     dom.toggleRightPanelBtn.addEventListener('click', toggleRightPanel);
+    dom.hideLogPanelBtn.addEventListener('click', toggleRightPanel);
     dom.promotionType.addEventListener('change', handlers.onFilterChange);
     dom.saveLaneHeadersBtn.addEventListener('click', handlers.onSaveLaneHeaders);
     dom.clearLaneHeadersBtn.addEventListener('click', handlers.onClearLaneHeaders);

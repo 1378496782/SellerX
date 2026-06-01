@@ -14,9 +14,9 @@
             <div class="header-left">
                 <h1 class="title">📦 SellerX</h1>
                 <span id="versionInfo" class="version-text">版本: 1.1.2</span>
+                <button id="toggleRightPanelBtn" class="btn btn-small log-toggle-btn">📜 显示日志</button>
             </div>
             <div class="header-right">
-                <button id="toggleRightPanelBtn" class="btn btn-small">📜 显示日志</button>
                 <button id="checkUpdateBtn" class="btn btn-small">检查更新</button>
                 <a href="https://github.com/1378496782/SellerX" target="_blank" class="github-link">
                     <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
@@ -158,7 +158,10 @@
             <!-- 右侧列 - 日志区域 -->
             <div class="right-column" id="rightColumn">
                 <div class="log-section">
-                    <h2>📜 执行日志</h2>
+                    <div class="log-title-row">
+                        <h2>📜 执行日志</h2>
+                        <button id="hideLogPanelBtn" class="panel-hide-btn" type="button">隐藏</button>
+                    </div>
                     <div id="logContainer" class="log-container">
                         <p class="empty-text">等待执行操作...</p>
                     </div>

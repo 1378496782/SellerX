@@ -36,8 +36,9 @@ body.expanded {
 .header-left {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     flex-shrink: 0;
+    min-width: 0;
 }
 
 .header-right {
@@ -60,6 +61,7 @@ body.expanded {
 .version-text {
     font-size: 12px;
     color: rgba(255, 255, 255, 0.8);
+    white-space: nowrap;
 }
 
 .github-link {
@@ -199,6 +201,10 @@ body.expanded {
     border: 1px solid rgba(255, 255, 255, 0.3) !important;
 }
 
+.log-toggle-btn {
+    margin-left: 4px;
+}
+
 .btn-small:hover:not(:disabled) {
     background: rgba(255, 255, 255, 0.35) !important;
     transform: none !important;
@@ -223,6 +229,32 @@ body.expanded {
     margin-bottom: 0;
 }
 
+.log-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #eee;
+}
+
+.panel-hide-btn {
+    flex-shrink: 0;
+    padding: 4px 8px;
+    border: 1px solid #d6dbe3;
+    border-radius: 6px;
+    background: #fff;
+    color: #555;
+    font-size: 11px;
+    cursor: pointer;
+}
+
+.panel-hide-btn:hover {
+    border-color: #667eea;
+    color: #4f46e5;
+}
+
 .section h2,
 .info-section h2,
 .config-section h2,
@@ -235,6 +267,12 @@ body.expanded {
     margin-bottom: 8px;
     padding-bottom: 6px;
     border-bottom: 1px solid #eee;
+}
+
+.log-title-row h2 {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: 0;
 }
 
 
