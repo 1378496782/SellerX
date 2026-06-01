@@ -14,6 +14,22 @@ export const promotionTypeNames = {
     17: 'Promo Code'
 };
 
+export const promotionFilterOptions = {
+    1: { promotionType: 1, label: 'All Promotions' },
+    2: { promotionType: 2, displayType: 1, label: 'Regular coupon' },
+    3: { promotionType: 3, displayType: 2, label: 'Shipping Discount' },
+    4: { promotionType: 4, displayType: 3, label: 'Product Discount' },
+    5: { promotionType: 5, displayType: 4, label: 'Flash Sale' },
+    6: { promotionType: 6, displayType: 5, label: 'Gift with Purchase' },
+    7: { promotionType: 7, displayType: 6, label: 'Buy More Save More' },
+    8: { promotionType: 8, displayType: 7, label: 'Bundle Deal' },
+    9: { promotionType: 9, displayType: 8, label: 'Promo Code (Old)' },
+    10: { promotionType: 10, label: 'Early Bird' },
+    11: { promotionType: 11, label: 'SNS' },
+    '5:16': { promotionType: 5, displayType: 16, label: 'Creator LIVE deal' },
+    17: { promotionType: 17, displayType: 8, label: 'Promo Code' }
+};
+
 export const tabNames = {
     all: 'All',
     2: 'Ongoing',
@@ -63,6 +79,38 @@ export function isPromoCodeType(type) {
 
 export function getDisplayType(type) {
     return displayTypeMap[type] || 1;
+}
+
+export function getPromotionFilterConfig(filterValue) {
+    const option = promotionFilterOptions[String(filterValue)] || promotionFilterOptions[filterValue];
+    if (option) {
+        return option;
+    }
+
+    const promotionType = parseInt(filterValue, 10);
+    return {
+        promotionType,
+        displayType: getDisplayType(promotionType),
+        label: promotionTypeNames[promotionType] || '未知类型'
+    };
+}
+
+export function getPromotionDisplayName(promotion) {
+    if (!promotion) {
+        return '未知';
+    }
+
+    if (Number(promotion.promotion_type) === 5) {
+        if (Number(promotion.display_type) === 16) {
+            return 'Creator LIVE deal';
+        }
+
+        if (Number(promotion.display_type) === 4) {
+            return 'Flash Sale';
+        }
+    }
+
+    return promotionTypeNames[promotion.promotion_type] || '未知';
 }
 
 export function isTokopediaRegion(countryCode) {

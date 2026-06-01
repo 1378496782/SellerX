@@ -1,10 +1,10 @@
 import {
     getBaseDomain,
-    getDisplayType,
     getLocaleConfig,
+    getPromotionDisplayName,
+    getPromotionFilterConfig,
     isPromoCodeType,
     isVoucherType,
-    promotionTypeNames,
     tabNames
 } from './config.js';
 import { sendRuntimeMessage } from './api-client.js';
@@ -36,13 +36,14 @@ function buildHeaders(baseDomain, countryCode, refererUrl) {
     };
 }
 
-function buildQueryRequestBody(tab, promotionType) {
+function buildQueryRequestBody(tab, filterConfig) {
     const requestBody = {
         index: 0,
         size: 50,
         diagnosis_type: 1
     };
 
+    const promotionType = filterConfig?.promotionType;
     if (promotionType) {
         requestBody.promotion_type = promotionType;
     }
@@ -51,8 +52,8 @@ function buildQueryRequestBody(tab, promotionType) {
         requestBody.status = tab;
     }
 
-    if (tab === 2 && promotionType) {
-        requestBody.display_type = getDisplayType(promotionType);
+    if (filterConfig?.displayType) {
+        requestBody.display_type = filterConfig.displayType;
     }
 
     return requestBody;
@@ -106,17 +107,22 @@ export function canRunPromotionAction() {
     return Boolean(appState.countryCode && getEffectiveSellerId());
 }
 
-export async function queryPromotions({ promotionType, tabs, log }) {
+export async function queryPromotions({ promotionFilter, tabs, log }) {
     const countryCode = appState.countryCode;
     const effectiveSellerId = getEffectiveSellerId();
     const baseDomain = getBaseDomain(countryCode);
     const commonParams = buildCommonParams(countryCode, effectiveSellerId);
+    const filterConfig = getPromotionFilterConfig(promotionFilter);
+    const promotionType = filterConfig.promotionType;
     const collectedPromotions = [];
 
     log('========================================');
     log('步骤1: 获取促销活动列表');
     log('========================================');
-    log('当前查询的活动类型: ' + (promotionType ? promotionType + ' (' + (promotionTypeNames[promotionType] || '未知类型') + ')' : '所有类型'));
+    log('当前查询的活动类型: ' + (promotionType ? promotionType + ' (' + filterConfig.label + ')' : '所有类型'));
+    if (filterConfig.displayType) {
+        log('当前查询的 Display Type: ' + filterConfig.displayType);
+    }
     log('查询的 Tab: ' + tabs.map((tab) => tab + ' (' + (tabNames[tab] || '未知') + ')').join(', '));
     log('是否为券类型: ' + (isVoucherType(promotionType) ? '是' : '否'));
     log('是否为促销码类型: ' + (isPromoCodeType(promotionType) ? '是' : '否'));
@@ -129,7 +135,7 @@ export async function queryPromotions({ promotionType, tabs, log }) {
 
         const refererUrl = buildRefererUrl(baseDomain, countryCode, tab, promotionType);
         const headers = buildHeaders(baseDomain, countryCode, refererUrl);
-        const requestBody = buildQueryRequestBody(tab, promotionType);
+        const requestBody = buildQueryRequestBody(tab, filterConfig);
 
         const response = await sendRuntimeMessage('fetchPromotions', {
             baseDomain,
@@ -149,7 +155,7 @@ export async function queryPromotions({ promotionType, tabs, log }) {
                 promotion.fromTab = tab;
                 promotion.realPromotionType = promotion.promotion_type;
                 collectedPromotions.push(promotion);
-                log('  ' + (index + 1) + '. ID: ' + promotion.id + ', 名称: ' + (promotion.name || 'N/A') + ', 状态: ' + (promotion.status || 'N/A') + ', 类型: ' + (promotion.promotion_type || 'N/A') + '(' + (promotionTypeNames[promotion.promotion_type] || '未知') + '), Tab: ' + tab);
+                log('  ' + (index + 1) + '. ID: ' + promotion.id + ', 名称: ' + (promotion.name || 'N/A') + ', 状态: ' + (promotion.status || 'N/A') + ', 类型: ' + (promotion.promotion_type || 'N/A') + '(' + getPromotionDisplayName(promotion) + '), Tab: ' + tab);
             });
         } else {
             log('列表请求失败: ' + describeResponseError(response), 'error');
@@ -167,11 +173,13 @@ export async function queryPromotions({ promotionType, tabs, log }) {
     return appState.allPromotions;
 }
 
-export async function deletePromotions({ promotionType, log }) {
+export async function deletePromotions({ promotionFilter, log }) {
     const countryCode = appState.countryCode;
     const effectiveSellerId = getEffectiveSellerId();
     const baseDomain = getBaseDomain(countryCode);
     const commonParams = buildCommonParams(countryCode, effectiveSellerId);
+    const filterConfig = getPromotionFilterConfig(promotionFilter);
+    const promotionType = filterConfig.promotionType;
     const deleteResults = [];
 
     log('');

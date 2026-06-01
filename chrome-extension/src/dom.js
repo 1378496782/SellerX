@@ -1,4 +1,4 @@
-import { deletableStatusTabs, promotionTypeNames, queryStatusTabs, tabNames } from './config.js';
+import { deletableStatusTabs, getPromotionDisplayName, queryStatusTabs, tabNames } from './config.js';
 
 export const dom = {};
 
@@ -77,8 +77,8 @@ export function setDeleteButtonEnabled(enabled) {
     dom.deleteBtn.disabled = !enabled;
 }
 
-export function getSelectedPromotionType() {
-    return parseInt(dom.promotionType.value, 10);
+export function getSelectedPromotionFilter() {
+    return dom.promotionType.value;
 }
 
 export function getSelectedTabs() {
@@ -161,7 +161,7 @@ export function renderPromotionList(promotions) {
     summary.style.color = '#666';
 
     promotions.forEach((promotion) => {
-        const typeName = promotionTypeNames[promotion.promotion_type] || '未知';
+        const typeName = getPromotionDisplayName(promotion);
         const statusName = getPromotionStatusName(promotion);
         const startTime = getPromotionTime(promotion, ['start_time', 'start_time_ms', 'begin_time', 'begin_time_ms', 'startTime']);
         const endTime = getPromotionTime(promotion, ['end_time', 'end_time_ms', 'finish_time', 'finish_time_ms', 'endTime']);

@@ -1,4 +1,4 @@
-import { cacheDom, canDeleteSelectedStatus, getSelectedPromotionType, getSelectedTabs, hideLogPanel, hideResult, renderCurrentVersion, renderPromotionList, renderShopInfo, renderVersion, setDeleteButtonEnabled, setUpdateButtonLoading, setupEventListeners, showDeleteResult, showLoading } from './src/dom.js';
+import { cacheDom, canDeleteSelectedStatus, getSelectedPromotionFilter, getSelectedTabs, hideLogPanel, hideResult, renderCurrentVersion, renderPromotionList, renderShopInfo, renderVersion, setDeleteButtonEnabled, setUpdateButtonLoading, setupEventListeners, showDeleteResult, showLoading } from './src/dom.js';
 import { log } from './src/logger.js';
 import { getCookies, getCurrentPageInfo, getSellerInfoFromApi } from './src/seller-service.js';
 import { appState } from './src/state.js';
@@ -72,7 +72,7 @@ async function queryPromotions() {
 
     try {
         const promotions = await queryPromotionRecords({
-            promotionType: getSelectedPromotionType(),
+            promotionFilter: getSelectedPromotionFilter(),
             tabs: getSelectedTabs(),
             log
         });
@@ -103,7 +103,7 @@ async function deletePromotions() {
 
     try {
         const results = await deletePromotionRecords({
-            promotionType: getSelectedPromotionType(),
+            promotionFilter: getSelectedPromotionFilter(),
             log
         });
 
