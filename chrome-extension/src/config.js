@@ -59,6 +59,15 @@ export const sellerDomains = {
     tokopedia: ['.tokopedia.com', '.tokopedia.net']
 };
 
+const countryCodeAliases = {
+    UK: 'GB'
+};
+
+const sellerDomainRegionAliases = {
+    GB: 'uk',
+    UK: 'uk'
+};
+
 export const sellerIdCookieKeys = [
     'oec_seller_id_unified_seller_env',
     'global_seller_id_unified_seller_env',
@@ -121,11 +130,21 @@ export function getPromotionDisplayName(promotion) {
 }
 
 export function isTokopediaRegion(countryCode) {
-    return countryCode === 'ID';
+    return normalizeCountryCode(countryCode) === 'ID';
+}
+
+export function normalizeCountryCode(countryCode) {
+    const region = (countryCode || '').toUpperCase();
+    return countryCodeAliases[region] || region;
+}
+
+export function getSellerDomainRegion(countryCode) {
+    const region = (countryCode || '').toUpperCase();
+    return sellerDomainRegionAliases[region] || normalizeCountryCode(region).toLowerCase();
 }
 
 export function getBaseDomain(countryCode) {
-    const region = (countryCode || '').toLowerCase();
+    const region = getSellerDomainRegion(countryCode);
     return isTokopediaRegion(countryCode)
         ? `seller-${region}.tokopedia.com`
         : `seller-${region}.tiktok.com`;
@@ -170,10 +189,10 @@ export function extractRegionFromUrl(urlText) {
 
     const hostMatch = urlText.match(/seller-([a-z]{2})\.(tiktok|tokopedia)\.(com|net)/i);
     if (hostMatch) {
-        return hostMatch[1].toUpperCase();
+        return normalizeCountryCode(hostMatch[1]);
     }
 
     const params = new URLSearchParams(urlText.split('?')[1] || '');
     const shopRegion = params.get('shop_region');
-    return shopRegion ? shopRegion.toUpperCase() : '';
+    return shopRegion ? normalizeCountryCode(shopRegion) : '';
 }
