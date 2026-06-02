@@ -1,15 +1,7 @@
 // 后台脚本 - 处理 API 请求和跨域问题
 
 const laneHeaderNames = ['x-tt-env', 'x-use-ppe'];
-const latestLaneStorageKey = 'laneHeaders:latest';
-const laneHeaderMaxAgeMs = 30 * 60 * 1000;
 const laneHeadersByTabId = {};
-const laneHeadersByHost = {};
-let latestLaneHeaders = null;
-
-function getHostLaneStorageKey(host) {
-    return 'laneHeaders:host:' + host;
-}
 
 function getTabLaneStorageKey(tabId) {
     return 'laneHeaders:tab:' + tabId;
@@ -38,21 +30,10 @@ function extractLaneHeaders(requestHeaders = []) {
     return laneHeaders;
 }
 
-function isFreshLaneRecord(record) {
-    return Boolean(record?.headers) && Date.now() - Number(record.capturedAt || 0) <= laneHeaderMaxAgeMs;
-}
-
 function cacheLaneHeaders(details) {
     const laneHeaders = extractLaneHeaders(details.requestHeaders);
     if (!Object.keys(laneHeaders).length) {
         return;
-    }
-
-    let host = '';
-    try {
-        host = new URL(details.url).hostname;
-    } catch (error) {
-        host = '';
     }
 
     if (details.tabId >= 0) {
@@ -64,29 +45,6 @@ function cacheLaneHeaders(details) {
             [getTabLaneStorageKey(details.tabId)]: laneHeadersByTabId[details.tabId]
         });
     }
-
-    if (host) {
-        laneHeadersByHost[host] = {
-            ...(laneHeadersByHost[host] || {}),
-            ...laneHeaders
-        };
-        chrome.storage.local.set({
-            [getHostLaneStorageKey(host)]: laneHeadersByHost[host]
-        });
-    }
-
-    latestLaneHeaders = {
-        headers: {
-            ...(latestLaneHeaders?.headers || {}),
-            ...laneHeaders
-        },
-        host,
-        tabId: details.tabId,
-        capturedAt: Date.now()
-    };
-    chrome.storage.local.set({
-        [latestLaneStorageKey]: latestLaneHeaders
-    });
 }
 
 chrome.webRequest.onBeforeSendHeaders.addListener(
@@ -118,6 +76,15 @@ chrome.webRequest.onSendHeaders.addListener(
 );
 
 chrome.tabs.onRemoved.addListener((tabId) => {
+    delete laneHeadersByTabId[tabId];
+    chrome.storage.local.remove(getTabLaneStorageKey(tabId));
+});
+
+chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
+    if (changeInfo.status !== 'loading' && !changeInfo.url) {
+        return;
+    }
+
     delete laneHeadersByTabId[tabId];
     chrome.storage.local.remove(getTabLaneStorageKey(tabId));
 });
@@ -232,37 +199,30 @@ async function deletePromotion(data) {
 
 async function getLaneHeaders(data = {}) {
     const tabId = data.tabId;
-    const host = data.host || data.baseDomain || '';
-    const cachedHeaders = (tabId !== undefined ? laneHeadersByTabId[tabId] : null) || laneHeadersByHost[host];
+    const cachedHeaders = tabId !== undefined ? laneHeadersByTabId[tabId] : null;
     if (cachedHeaders) {
         return {
             success: true,
             headers: cachedHeaders,
-            source: 'tab/host'
+            source: 'tab'
         };
     }
 
-    const storageKeys = [];
-    if (tabId !== undefined) {
-        storageKeys.push(getTabLaneStorageKey(tabId));
+    if (tabId === undefined) {
+        return {
+            success: true,
+            headers: {},
+            source: ''
+        };
     }
-    if (host) {
-        storageKeys.push(getHostLaneStorageKey(host));
-    }
-    storageKeys.push(latestLaneStorageKey);
 
-    const stored = storageKeys.length ? await chrome.storage.local.get(storageKeys) : {};
-    const storedLatest = stored[latestLaneStorageKey] || latestLaneHeaders || {};
-    const freshLatestHeaders = isFreshLaneRecord(storedLatest) ? storedLatest.headers : null;
-    const headers =
-        (tabId !== undefined ? stored[getTabLaneStorageKey(tabId)] : null) ||
-        stored[getHostLaneStorageKey(host)] ||
-        freshLatestHeaders ||
-        {};
+    const storageKey = getTabLaneStorageKey(tabId);
+    const stored = await chrome.storage.local.get([storageKey]);
+    const headers = stored[storageKey] || {};
 
     return {
         success: true,
         headers,
-        source: Object.keys(headers).length > 0 && freshLatestHeaders === headers ? 'latest' : 'storage'
+        source: Object.keys(headers).length > 0 ? 'tab-storage' : ''
     };
 }
