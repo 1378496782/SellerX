@@ -28,7 +28,11 @@ export const promotionFilterOptions = {
     '5:16': { promotionType: 5, displayType: 16, label: 'Creator LIVE deal' },
     '7:25': { promotionType: 7, displayType: 25, label: 'Buy X Get Y' },
     '5:15': { promotionType: 5, displayType: 15, label: 'Live Flash Deal' },
+    '2:9': { promotionType: 2, displayType: 9, label: 'Live Voucher' },
+    '2:11': { promotionType: 2, displayType: 11, label: 'Shop New User Voucher' },
+    '2:12': { promotionType: 2, displayType: 12, label: 'Creator Voucher' },
     '2:21': { promotionType: 2, displayType: 21, label: 'Follow Voucher' },
+    '2:24': { promotionType: 2, displayType: 24, label: 'Seller Review Voucher' },
     17: { promotionType: 9, displayType: 17, label: 'Promo Code' }
 };
 
