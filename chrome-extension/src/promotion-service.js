@@ -67,6 +67,14 @@ function buildQueryRequestBody(tab, filterConfig) {
     return requestBody;
 }
 
+function filterPromotionsByConfig(promotions, filterConfig) {
+    if (!filterConfig?.displayType) {
+        return promotions;
+    }
+
+    return promotions.filter((promotion) => Number(promotion.display_type) === Number(filterConfig.displayType));
+}
+
 function getDeleteRequestConfig(baseDomain, commonParams, promotion, actualType) {
     if (isVoucherType(actualType)) {
         return {
@@ -191,8 +199,13 @@ export async function queryPromotions({ promotionFilter, tabs, log }) {
             log('列表请求状态: 成功', 'success');
             log('x-tt-logid: ' + (response.logId || 'N/A'));
 
-            const promotions = response.data.data?.promotions || [];
-            log('Tab ' + tab + ' 找到 ' + promotions.length + ' 个促销活动:');
+            const serverPromotions = response.data.data?.promotions || [];
+            const promotions = filterPromotionsByConfig(serverPromotions, filterConfig);
+            if (filterConfig.displayType) {
+                log('Tab ' + tab + ' 服务端返回 ' + serverPromotions.length + ' 个，按 display_type=' + filterConfig.displayType + ' 精确过滤后 ' + promotions.length + ' 个促销活动:');
+            } else {
+                log('Tab ' + tab + ' 找到 ' + promotions.length + ' 个促销活动:');
+            }
 
             promotions.forEach((promotion, index) => {
                 promotion.fromTab = tab;
