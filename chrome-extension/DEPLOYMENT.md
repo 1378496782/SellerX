@@ -11,7 +11,10 @@
 
 在以下文件中替换占位符：
 
-#### manifest.json:
+#### 发布用 manifest.json:
+
+手动上传 ZIP 或通过「加载已解压的扩展程序」安装时不要配置 `update_url`。只有发布签名 `.crx` 且需要外部自动更新时，才在发布用 manifest 中加入：
+
 ```json
 "update_url": "https://raw.githubusercontent.com/YOUR_GITHUB_USERNAME/YOUR_REPO_NAME/main/chrome-extension/update.xml"
 ```

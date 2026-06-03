@@ -113,7 +113,8 @@ cd SellerX
 
 SellerX 使用 `chrome-extension/update.xml` 配合 GitHub Releases 提供外部更新地址。
 
-- 通过签名 `.crx` 成功安装的扩展，可使用 `update_url` 检查更新。
+- 手动上传 ZIP 或通过「加载已解压的扩展程序」安装时，`manifest.json` 不能包含 `update_url`。
+- 通过签名 `.crx` 成功安装并需要自动更新时，可在发布用 manifest 中加入 `update_url` 检查更新。
 - 通过「加载已解压的扩展程序」安装的开发模式版本，通常需要手动替换文件夹或重新加载新版本。
 - Chrome 自动更新不是实时触发，可能存在数小时延迟。
 
