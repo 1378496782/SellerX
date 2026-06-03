@@ -593,6 +593,7 @@ body.expanded {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 10px;
 }
 
 .promotion-item:last-child {
@@ -613,6 +614,8 @@ body.expanded {
 }
 
 .promotion-item .name {
+    flex: 1;
+    min-width: 0;
     font-weight: 600;
     color: #333;
     overflow: hidden;
@@ -622,20 +625,22 @@ body.expanded {
 
 .promotion-meta-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 4px 10px;
 }
 
 .promotion-item .meta {
+    min-width: 0;
     color: #888;
     font-size: 11px;
     line-height: 1.4;
-    word-break: break-all;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .single-delete-btn {
     flex-shrink: 0;
-    margin-left: 10px;
     padding: 6px 10px;
     border: 1px solid #fecaca;
     border-radius: 6px;

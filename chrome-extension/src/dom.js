@@ -229,15 +229,22 @@ export function renderPromotionList(promotions, handlers = {}) {
 
         const titleRow = document.createElement('div');
         titleRow.className = 'promotion-title-row';
-        appendTextElement(titleRow, 'span', 'name', promotion.name || '未命名活动');
+        const nameText = promotion.name || '未命名活动';
+        const nameElement = appendTextElement(titleRow, 'span', 'name', nameText);
+        nameElement.title = nameText;
         appendTextElement(titleRow, 'span', `status-pill status-${String(statusName).toLowerCase()}`, statusName);
 
         const metaGrid = document.createElement('div');
         metaGrid.className = 'promotion-meta-grid';
-        appendTextElement(metaGrid, 'span', 'meta', `ID: ${promotion.id || 'N/A'}`);
-        appendTextElement(metaGrid, 'span', 'meta', `类型: ${typeName}`);
-        appendTextElement(metaGrid, 'span', 'meta', `开始: ${startTime}`);
-        appendTextElement(metaGrid, 'span', 'meta', `结束: ${endTime}`);
+        [
+            `ID: ${promotion.id || 'N/A'}`,
+            `类型: ${typeName}`,
+            `开始: ${startTime}`,
+            `结束: ${endTime}`
+        ].forEach((metaText) => {
+            const metaElement = appendTextElement(metaGrid, 'span', 'meta', metaText);
+            metaElement.title = metaText;
+        });
 
         info.appendChild(titleRow);
         info.appendChild(metaGrid);
