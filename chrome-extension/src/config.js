@@ -26,6 +26,9 @@ export const promotionFilterOptions = {
     10: { promotionType: 10, displayType: 19, label: 'Early Bird' },
     11: { promotionType: 11, displayType: 20, label: 'SNS' },
     '5:16': { promotionType: 5, displayType: 16, label: 'Creator LIVE deal' },
+    '7:25': { promotionType: 7, displayType: 25, label: 'Buy X Get Y' },
+    '5:15': { promotionType: 5, displayType: 15, label: 'Live Flash Deal' },
+    '2:21': { promotionType: 2, displayType: 21, label: 'Follow Voucher' },
     17: { promotionType: 9, displayType: 17, label: 'Promo Code' }
 };
 

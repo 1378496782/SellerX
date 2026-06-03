@@ -8,7 +8,7 @@ SellerX 是一个 Chrome Extension，用于批量查询、管理和删除 TikTok
 
 - 自动识别当前 Seller Center 页面中的店铺信息，包括 `Seller ID`、`Shop Name`、`Shop Code` 和 `Region`。
 - 支持 TikTok 与 Tokopedia Seller Center 域名，覆盖 US、MX、ID 等多地区场景。
-- 支持多种促销活动类型筛选，例如 Product Discount、Flash Sale、Creator LIVE deal、Regular coupon、Promo Code 等。
+- 支持多种促销活动类型筛选，例如 Product Discount、Flash Sale、Live Flash Deal、Creator LIVE deal、Regular coupon、Promo Code、Buy X Get Y、Follow Voucher 等。
 - 支持按状态查询活动：`All`、`Ongoing & Upcoming`、`Ongoing`、`Upcoming`、`Deactivated`、`Ended`。
 - 支持自动捕获或手动配置泳道 Header，查询和删除可复用 `x-tt-env`、`x-use-ppe`。
 - 支持批量删除 `Ongoing` 和 `Upcoming` 活动，并对不可删除状态进行保护。
