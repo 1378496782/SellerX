@@ -27,6 +27,8 @@ SellerX 是一个 Chrome Extension，用于批量查询、管理和删除 TikTok
 - 优化日志面板交互：日志开关固定在左上区域，日志面板标题右侧新增 `隐藏` 按钮。
 - 新增联系作者入口：顶部新增飞书聊天按钮，点击可直接打开与作者的飞书聊天窗口。
 - 删除结果中的类型展示为更详细的业务类型，例如 `Flash Sale`、`Creator LIVE deal`、`Shipping Discount`、`Buy More Save More`。
+- 根据后端 IDL 校准活动展示枚举：修正 `Bundle Deal`、`Promo Code`、`Early Bird`、`SNS` 等 `display_type`，并补齐更多活动类型展示名称。
+- 查询日志新增原始 `promotion_type`、`display_type`、`promotion_type_detail`，方便后续继续校准特殊活动类型。
 
 ## v1.1.2 更新重点
 

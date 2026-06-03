@@ -198,7 +198,14 @@ export async function queryPromotions({ promotionFilter, tabs, log }) {
                 promotion.fromTab = tab;
                 promotion.realPromotionType = promotion.promotion_type;
                 collectedPromotions.push(promotion);
-                log('  ' + (index + 1) + '. ID: ' + promotion.id + ', 名称: ' + (promotion.name || 'N/A') + ', 状态: ' + (promotion.status || 'N/A') + ', 类型: ' + (promotion.promotion_type || 'N/A') + '(' + getPromotionDisplayName(promotion) + '), Tab: ' + tab);
+                log('  ' + (index + 1) + '. ID: ' + promotion.id +
+                    ', 名称: ' + (promotion.name || 'N/A') +
+                    ', 状态: ' + (promotion.status || 'N/A') +
+                    ', 类型: ' + getPromotionDisplayName(promotion) +
+                    ', promotion_type: ' + (promotion.promotion_type || 'N/A') +
+                    ', display_type: ' + (promotion.display_type || 'N/A') +
+                    ', promotion_type_detail: ' + (promotion.promotion_type_detail || 'N/A') +
+                    ', Tab: ' + tab);
             });
         } else {
             log('列表请求失败: ' + describeResponseError(response), 'error');
