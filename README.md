@@ -2,7 +2,7 @@
 
 SellerX 是一个 Chrome Extension，用于批量查询、管理和删除 TikTok Shop Seller Center 店铺中的促销活动。
 
-当前版本：`v1.1.3`
+当前版本：`v1.1.4`
 
 ## 主要功能
 
@@ -16,6 +16,14 @@ SellerX 是一个 Chrome Extension，用于批量查询、管理和删除 TikTok
 - 提供执行日志、删除结果汇总、成功/失败明细和一键复制结果。
 - 支持一键打开作者飞书聊天，便于反馈问题。
 - 支持 GitHub Releases 自动发布，并可自动生成 `.zip`、`.crx` 和 `update.xml`。
+
+## v1.1.4 更新重点
+
+- 扩展活动类型筛选：新增 `Live Flash Deal`、`Buy X Get Y`、`Live Voucher`、`Shop New User Voucher`、`Creator Voucher`、`Follow Voucher`、`Seller Review Voucher`。
+- 修复 `Promo Code` 筛选异常：移除重复的错误入口，统一使用 `promotion_type=9` 与 `display_type=17`。
+- 修复券类筛选不精确问题：服务端可能返回同一券桶下的混合结果，前端会按 `display_type` 再做一次精确过滤。
+- 优化活动类型识别：优先使用 `display_type`，其次使用 `promotion_type_detail`，最后才回退到 `promotion_type`。
+- 优化日志展开布局：日志展开后 Shop Info 会压缩为窄摘要区域，给执行日志和配置区域留出更多可用空间。
 
 ## v1.1.3 更新重点
 
@@ -111,6 +119,46 @@ cd SellerX
 - `Ended`：仅查询，不允许删除。
 - 切换活动类型或状态后，删除按钮会自动禁用，需要重新查询后才能继续操作。
 
+## 实现踩坑
+
+### Promotion Type 与 Display Type
+
+促销活动类型不能只依赖 `promotion_type` 判断。`promotion_type` 更像后端查询使用的一级大类或查询桶，多个业务活动可能共用同一个 `promotion_type`。
+
+例如 Flash Sale 与 Creator LIVE deal 都可能落在相同的大类中，需要继续结合 `display_type` 才能区分：
+
+```text
+promotion_type=5, display_type=4   -> Flash Sale
+promotion_type=5, display_type=16  -> Creator LIVE deal
+```
+
+因此当前展示活动类型时采用以下优先级：
+
+```text
+display_type -> promotion_type_detail -> promotion_type
+```
+
+### 券类筛选的二次过滤
+
+部分券类活动会共用同一个券桶，服务端即使传入 `display_type`，也可能返回同一桶下的混合结果。例如 `Regular coupon` 与 `Follow Voucher` 都可能通过 `promotion_type=2` 查询到。
+
+为避免列表中混入其他券类，SellerX 会在接口返回后按所选 `display_type` 再做一次客户端精确过滤：
+
+```text
+Follow Voucher -> promotion_type=2, display_type=21
+Regular coupon -> promotion_type=2, display_type=1
+```
+
+日志中会输出服务端返回数量和精确过滤后的数量，方便排查类似问题。
+
+### Promo Code 的真实筛选参数
+
+`Promo Code` 不能使用 `promotion_type=17` 查询，否则接口可能退化为近似全量结果。当前统一使用：
+
+```text
+promotion_type=9, display_type=17
+```
+
 ## 自动更新说明
 
 SellerX 使用 `chrome-extension/update.xml` 配合 GitHub Releases 提供外部更新地址。
@@ -123,7 +171,7 @@ SellerX 使用 `chrome-extension/update.xml` 配合 GitHub Releases 提供外部
 当前 `update.xml` 指向：
 
 ```text
-https://github.com/1378496782/SellerX/releases/download/v1.1.3/sellerx-extension.crx
+https://github.com/1378496782/SellerX/releases/download/v1.1.4/sellerx-extension.crx
 ```
 
 ## 项目结构
