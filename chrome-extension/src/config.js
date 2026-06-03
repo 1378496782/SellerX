@@ -7,11 +7,10 @@ export const promotionTypeNames = {
     6: 'Gift with Purchase',
     7: 'Buy More Save More',
     8: 'Bundle Deal',
-    9: 'Promo Code (Old)',
+    9: 'Promo Code',
     10: 'Early Bird',
     11: 'SNS',
-    12: 'Creator LIVE deal',
-    17: 'Promo Code'
+    12: 'Creator LIVE deal'
 };
 
 export const promotionFilterOptions = {
@@ -23,11 +22,11 @@ export const promotionFilterOptions = {
     6: { promotionType: 6, displayType: 5, label: 'Gift with Purchase' },
     7: { promotionType: 7, displayType: 6, label: 'Buy More Save More' },
     8: { promotionType: 8, displayType: 8, label: 'Bundle Deal' },
-    9: { promotionType: 9, displayType: 17, label: 'Promo Code (Old)' },
+    9: { promotionType: 9, displayType: 17, label: 'Promo Code' },
     10: { promotionType: 10, displayType: 19, label: 'Early Bird' },
     11: { promotionType: 11, displayType: 20, label: 'SNS' },
     '5:16': { promotionType: 5, displayType: 16, label: 'Creator LIVE deal' },
-    17: { promotionType: 17, displayType: 17, label: 'Promo Code' }
+    17: { promotionType: 9, displayType: 17, label: 'Promo Code' }
 };
 
 export const tabNames = {
