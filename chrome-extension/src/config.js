@@ -13,6 +13,8 @@ export const promotionTypeNames = {
     12: 'Creator LIVE deal'
 };
 
+export const CHROME_WEB_STORE_URL = 'https://chromewebstore.google.com/detail/sellerx/mlienbhlbggdmbinchmkddnbjcffoked';
+
 export const promotionFilterOptions = {
     1: { promotionType: 1, label: 'All Promotions' },
     2: { promotionType: 2, displayType: 1, label: 'Regular coupon' },

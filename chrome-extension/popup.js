@@ -3,6 +3,7 @@ import { log } from './src/logger.js';
 import { clearManualLaneHeaders, getCookies, getCurrentPageInfo, getLaneHeaders, getSellerInfoFromApi, saveManualLaneHeaders } from './src/seller-service.js';
 import { appState, setPromotions } from './src/state.js';
 import { canRunPromotionAction, deletePromotions as deletePromotionRecords, deleteSinglePromotion as deleteSinglePromotionRecord, queryPromotions as queryPromotionRecords } from './src/promotion-service.js';
+import { CHROME_WEB_STORE_URL } from './src/config.js';
 
 async function init() {
     showLoading(true);
@@ -54,7 +55,16 @@ async function checkForUpdates() {
         const currentVersion = manifest.version;
         renderCurrentVersion(currentVersion);
 
-        alert(`当前版本: ${currentVersion}\n\n如需更新，请访问 GitHub Releases 页面。\n\n注意：Chrome 扩展的自动更新需要：\n1. 将扩展打包并签名\n2. 配置正确的 update_url\n3. 发布到 GitHub Releases`);
+        const shouldOpenStore = confirm(
+            `当前版本: ${currentVersion}\n\n` +
+            '如果你是通过 Chrome Web Store 安装的 SellerX，后续版本会由 Chrome 自动更新，不需要手动下载新包。\n\n' +
+            'Chrome 自动更新不是实时触发，可能会有一定延迟。也可以打开 Chrome Web Store 页面确认当前商店版本。\n\n' +
+            '是否现在打开 SellerX 的 Chrome Web Store 页面？'
+        );
+
+        if (shouldOpenStore) {
+            chrome.tabs.create({ url: CHROME_WEB_STORE_URL });
+        }
     } catch (error) {
         log('检查更新失败: ' + error.message, 'error');
         console.error('检查更新失败:', error);
