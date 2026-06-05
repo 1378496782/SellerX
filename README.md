@@ -15,7 +15,7 @@ SellerX 是一个 Chrome Extension，用于批量查询、管理和删除 TikTok
 - 支持列表内单条删除 `Ongoing` 和 `Upcoming` 活动。
 - 提供执行日志、删除结果汇总、成功/失败明细和一键复制结果。
 - 支持一键打开作者飞书聊天，便于反馈问题。
-- 支持 GitHub Releases 自动发布，并可自动生成 `.zip`、`.crx` 和 `update.xml`。
+- 支持 Chrome Web Store 安装和自动更新，同时保留 GitHub Releases 安装包作为备用方式。
 
 ## v1.1.4 更新重点
 
@@ -69,16 +69,25 @@ SellerX 是一个 Chrome Extension，用于批量查询、管理和删除 TikTok
 
 ## 安装方式
 
-### 方法 1：从 GitHub Releases 下载
+### 方法 1：从 Chrome Web Store 安装（推荐）
 
-推荐使用 `sellerx-extension.zip` 安装。
+推荐直接通过 Chrome Web Store 安装，后续版本会由 Chrome 自动更新。
+
+1. 打开 [SellerX - Chrome Web Store](https://chromewebstore.google.com/detail/sellerx/mlienbhlbggdmbinchmkddnbjcffoked)。
+2. 点击「添加至 Chrome」完成安装。
+3. 也可以在 Chrome Web Store 里搜索 `SellerX` 后安装。
+4. 如果觉得好用，欢迎在商店页面底部点个五星好评。
+
+### 方法 2：从 GitHub Releases 下载 ZIP
+
+如果无法访问 Chrome Web Store，或需要手动安装指定版本，可以使用 `sellerx-extension.zip`。
 
 1. 打开 [SellerX Releases](https://github.com/1378496782/SellerX/releases)。
 2. 下载最新版本中的 `sellerx-extension.zip`。
 3. 打开 Chrome，进入 `chrome://extensions/`。
 4. 将 zip 拖动到「所有扩展程序」页面。
 
-### 方法 2：从源码安装
+### 方法 3：从源码安装
 
 适合需要查看或修改代码的场景：
 
@@ -89,7 +98,7 @@ cd SellerX
 
 然后在 Chrome 的 `chrome://extensions/` 中选择项目下的 `chrome-extension` 文件夹。
 
-### 方法 3：使用作者提供的文件夹
+### 方法 4：使用作者提供的文件夹
 
 如果你已经从作者处收到完整扩展文件夹：
 
@@ -161,18 +170,11 @@ promotion_type=9, display_type=17
 
 ## 自动更新说明
 
-SellerX 使用 `chrome-extension/update.xml` 配合 GitHub Releases 提供外部更新地址。
+推荐通过 [Chrome Web Store](https://chromewebstore.google.com/detail/sellerx/mlienbhlbggdmbinchmkddnbjcffoked) 安装 SellerX。通过商店安装后，后续版本会由 Chrome 自动更新，不需要手动下载新包。
 
-- 手动上传 ZIP 或通过「加载已解压的扩展程序」安装时，`manifest.json` 不能包含 `update_url`。
-- 通过签名 `.crx` 成功安装并需要自动更新时，可在发布用 manifest 中加入 `update_url` 检查更新。
-- 通过「加载已解压的扩展程序」安装的开发模式版本，通常需要手动替换文件夹或重新加载新版本。
-- Chrome 自动更新不是实时触发，可能存在数小时延迟。
-
-当前 `update.xml` 指向：
-
-```text
-https://github.com/1378496782/SellerX/releases/download/v1.1.4/sellerx-extension.crx
-```
+- Chrome Web Store 自动更新不是实时触发，通常会有一定延迟。
+- 从 GitHub Releases 手动拖拽 `sellerx-extension.zip` 安装的版本，不走商店自动更新；需要更新时请重新下载最新 ZIP 并覆盖安装。
+- 通过「加载已解压的扩展程序」安装的开发模式版本，也需要手动替换文件夹或重新加载新版本。
 
 ## 项目结构
 
