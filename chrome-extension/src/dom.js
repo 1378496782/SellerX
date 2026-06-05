@@ -163,7 +163,9 @@ export function canDeleteSelectedStatus() {
 
 export function setUpdateButtonLoading(isLoading) {
     dom.checkUpdateBtn.disabled = isLoading;
-    dom.checkUpdateBtn.textContent = isLoading ? '检查中...' : '检查更新';
+    dom.checkUpdateBtn.classList.toggle('is-loading', isLoading);
+    dom.checkUpdateBtn.dataset.tooltip = isLoading ? '检查中...' : '检查更新';
+    dom.checkUpdateBtn.setAttribute('aria-label', isLoading ? '检查中...' : '检查更新');
 }
 
 function appendTextElement(parent, tagName, className, text) {
