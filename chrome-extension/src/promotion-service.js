@@ -10,6 +10,9 @@ import {
 import { sendRuntimeMessage } from './api-client.js';
 import { appState, clearPromotions, getEffectiveSellerId, setPromotions } from './state.js';
 
+const QUERY_PAGE_SIZE = 50;
+const MAX_QUERY_PAGES = 20;
+
 function buildCommonParams(countryCode, sellerId) {
     const { locale, language, timezone } = getLocaleConfig(countryCode);
     return '?locale=' + locale + '&language=' + language + '&oec_seller_id=' + sellerId +
@@ -44,10 +47,10 @@ function buildHeaders(baseDomain, countryCode, refererUrl) {
     return headers;
 }
 
-function buildQueryRequestBody(tab, filterConfig) {
+function buildQueryRequestBody(tab, filterConfig, pageIndex = 0) {
     const requestBody = {
-        index: 0,
-        size: 50,
+        index: pageIndex * QUERY_PAGE_SIZE,
+        size: QUERY_PAGE_SIZE,
         diagnosis_type: 1
     };
 
@@ -60,19 +63,67 @@ function buildQueryRequestBody(tab, filterConfig) {
         requestBody.status = tab;
     }
 
-    if (filterConfig?.displayType) {
+    if (filterConfig?.displayType && !filterConfig?.promotionTypeDetail && !filterConfig?.promotionTypeDetails) {
         requestBody.display_type = filterConfig.displayType;
     }
 
     return requestBody;
 }
 
+function normalizeFilterValues(value, values) {
+    if (Array.isArray(values)) {
+        return values.map(Number);
+    }
+
+    return value ? [Number(value)] : [];
+}
+
 function filterPromotionsByConfig(promotions, filterConfig) {
-    if (!filterConfig?.displayType) {
+    const displayTypes = normalizeFilterValues(filterConfig?.displayType, filterConfig?.displayTypes);
+    const promotionTypeDetails = normalizeFilterValues(filterConfig?.promotionTypeDetail, filterConfig?.promotionTypeDetails);
+
+    if (!displayTypes.length && !promotionTypeDetails.length) {
         return promotions;
     }
 
-    return promotions.filter((promotion) => Number(promotion.display_type) === Number(filterConfig.displayType));
+    return promotions.filter((promotion) => {
+        const displayTypeMatched = displayTypes.includes(Number(promotion.display_type));
+        const detailMatched = promotionTypeDetails.includes(Number(promotion.promotion_type_detail));
+
+        return displayTypeMatched || detailMatched;
+    });
+}
+
+function formatFilterValues(value, values) {
+    const normalizedValues = normalizeFilterValues(value, values);
+    return normalizedValues.length ? normalizedValues.join(', ') : '';
+}
+
+function logPromotionTypeDistribution(promotions, log) {
+    if (!promotions.length) {
+        return;
+    }
+
+    const distribution = new Map();
+    promotions.forEach((promotion) => {
+        const promotionType = promotion.promotion_type || 'N/A';
+        const displayType = promotion.display_type || 'N/A';
+        const detail = promotion.promotion_type_detail || 'N/A';
+        const displayName = getPromotionDisplayName(promotion);
+        const key = 'promotion_type=' + promotionType +
+            ', display_type=' + displayType +
+            ', promotion_type_detail=' + detail +
+            ', 类型=' + displayName;
+        distribution.set(key, (distribution.get(key) || 0) + 1);
+    });
+
+    log('未命中过滤条件，服务端返回的类型分布如下，可用于校准枚举：', 'warning');
+    Array.from(distribution.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 12)
+        .forEach(([key, count]) => {
+            log('  ' + count + ' 个：' + key, 'warning');
+        });
 }
 
 function getDeleteRequestConfig(baseDomain, commonParams, promotion, actualType) {
@@ -170,8 +221,13 @@ export async function queryPromotions({ promotionFilter, tabs, log }) {
     log('步骤1: 获取促销活动列表');
     log('========================================');
     log('当前查询的活动类型: ' + (promotionType ? promotionType + ' (' + filterConfig.label + ')' : '所有类型'));
-    if (filterConfig.displayType) {
-        log('当前查询的 Display Type: ' + filterConfig.displayType);
+    const displayTypesForLog = formatFilterValues(filterConfig.displayType, filterConfig.displayTypes);
+    const promotionTypeDetailsForLog = formatFilterValues(filterConfig.promotionTypeDetail, filterConfig.promotionTypeDetails);
+    if (displayTypesForLog) {
+        log('当前查询的 Display Type: ' + displayTypesForLog);
+    }
+    if (promotionTypeDetailsForLog) {
+        log('当前查询的 Promotion Type Detail: ' + promotionTypeDetailsForLog);
     }
     log('查询的 Tab: ' + tabs.map((tab) => tab + ' (' + (tabNames[tab] || '未知') + ')').join(', '));
     log('是否为券类型: ' + (isVoucherType(promotionType) ? '是' : '否'));
@@ -186,44 +242,63 @@ export async function queryPromotions({ promotionFilter, tabs, log }) {
 
         const refererUrl = buildRefererUrl(baseDomain, countryCode, tab, promotionType);
         const headers = buildHeaders(baseDomain, countryCode, refererUrl);
-        const requestBody = buildQueryRequestBody(tab, filterConfig);
 
-        const response = await sendRuntimeMessage('fetchPromotions', {
-            baseDomain,
-            commonParams,
-            headers,
-            requestBody
-        });
+        const serverPromotions = [];
+        let pageCount = 0;
+        for (let pageIndex = 0; pageIndex < MAX_QUERY_PAGES; pageIndex++) {
+            const requestBody = buildQueryRequestBody(tab, filterConfig, pageIndex);
+            const response = await sendRuntimeMessage('fetchPromotions', {
+                baseDomain,
+                commonParams,
+                headers,
+                requestBody
+            });
 
-        if (response.success && (!response.apiCode || response.apiCode === 0)) {
-            log('列表请求状态: 成功', 'success');
-            log('x-tt-logid: ' + (response.logId || 'N/A'));
-
-            const serverPromotions = response.data.data?.promotions || [];
-            const promotions = filterPromotionsByConfig(serverPromotions, filterConfig);
-            if (filterConfig.displayType) {
-                log('Tab ' + tab + ' 服务端返回 ' + serverPromotions.length + ' 个，按 display_type=' + filterConfig.displayType + ' 精确过滤后 ' + promotions.length + ' 个促销活动:');
-            } else {
-                log('Tab ' + tab + ' 找到 ' + promotions.length + ' 个促销活动:');
+            if (!response.success || (response.apiCode && response.apiCode !== 0)) {
+                log('列表请求失败: ' + describeResponseError(response), 'error');
+                log('x-tt-logid: ' + (response?.logId || 'N/A'), 'error');
+                break;
             }
 
-            promotions.forEach((promotion, index) => {
-                promotion.fromTab = tab;
-                promotion.realPromotionType = promotion.promotion_type;
-                collectedPromotions.push(promotion);
-                log('  ' + (index + 1) + '. ID: ' + promotion.id +
-                    ', 名称: ' + (promotion.name || 'N/A') +
-                    ', 状态: ' + (promotion.status || 'N/A') +
-                    ', 类型: ' + getPromotionDisplayName(promotion) +
-                    ', promotion_type: ' + (promotion.promotion_type || 'N/A') +
-                    ', display_type: ' + (promotion.display_type || 'N/A') +
-                    ', promotion_type_detail: ' + (promotion.promotion_type_detail || 'N/A') +
-                    ', Tab: ' + tab);
-            });
-        } else {
-            log('列表请求失败: ' + describeResponseError(response), 'error');
-            log('x-tt-logid: ' + (response?.logId || 'N/A'), 'error');
+            const pagePromotions = response.data.data?.promotions || [];
+            pageCount++;
+            log('第 ' + (pageIndex + 1) + ' 页请求成功，返回 ' + pagePromotions.length + ' 个，x-tt-logid: ' + (response.logId || 'N/A'), 'success');
+            serverPromotions.push(...pagePromotions);
+
+            if (pagePromotions.length < QUERY_PAGE_SIZE) {
+                break;
+            }
         }
+
+        const promotions = filterPromotionsByConfig(serverPromotions, filterConfig);
+        const displayTypesDescription = formatFilterValues(filterConfig.displayType, filterConfig.displayTypes);
+        const promotionTypeDetailsDescription = formatFilterValues(filterConfig.promotionTypeDetail, filterConfig.promotionTypeDetails);
+        if (displayTypesDescription || promotionTypeDetailsDescription) {
+            const filterDescription = [
+                displayTypesDescription ? 'display_type in [' + displayTypesDescription + ']' : '',
+                promotionTypeDetailsDescription ? 'promotion_type_detail in [' + promotionTypeDetailsDescription + ']' : ''
+            ].filter(Boolean).join(' 或 ');
+            log('Tab ' + tab + ' 共查询 ' + pageCount + ' 页，服务端返回 ' + serverPromotions.length + ' 个，按 ' + filterDescription + ' 过滤后 ' + promotions.length + ' 个促销活动:');
+            if (promotions.length === 0) {
+                logPromotionTypeDistribution(serverPromotions, log);
+            }
+        } else {
+            log('Tab ' + tab + ' 共查询 ' + pageCount + ' 页，找到 ' + promotions.length + ' 个促销活动:');
+        }
+
+        promotions.forEach((promotion, index) => {
+            promotion.fromTab = tab;
+            promotion.realPromotionType = promotion.promotion_type;
+            collectedPromotions.push(promotion);
+            log('  ' + (index + 1) + '. ID: ' + promotion.id +
+                ', 名称: ' + (promotion.name || 'N/A') +
+                ', 状态: ' + (promotion.status || 'N/A') +
+                ', 类型: ' + getPromotionDisplayName(promotion) +
+                ', promotion_type: ' + (promotion.promotion_type || 'N/A') +
+                ', display_type: ' + (promotion.display_type || 'N/A') +
+                ', promotion_type_detail: ' + (promotion.promotion_type_detail || 'N/A') +
+                ', Tab: ' + tab);
+        });
     }
 
     setPromotions(collectedPromotions);
