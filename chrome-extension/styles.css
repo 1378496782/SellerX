@@ -79,6 +79,56 @@ body.expanded {
     height: 32px;
 }
 
+.has-tooltip {
+    position: relative;
+}
+
+.has-tooltip::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) translateY(-2px);
+    z-index: 20;
+    padding: 5px 8px;
+    border-radius: 6px;
+    background: rgba(20, 24, 36, 0.95);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.12s ease, transform 0.12s ease;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+}
+
+.has-tooltip::before {
+    content: '';
+    position: absolute;
+    top: calc(100% + 3px);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 21;
+    border: 5px solid transparent;
+    border-bottom-color: rgba(20, 24, 36, 0.95);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.12s ease;
+}
+
+.has-tooltip:hover::after,
+.has-tooltip:focus-visible::after {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+.has-tooltip:hover::before,
+.has-tooltip:focus-visible::before {
+    opacity: 1;
+}
+
 .icon-link {
     border: 0;
     cursor: pointer;
@@ -89,9 +139,18 @@ body.expanded {
     background: rgba(255, 255, 255, 0.2);
 }
 
+.manual-link {
+    color: #fff;
+    background: #2f6df6;
+}
+
 .icon-link:hover,
 .github-link:hover {
     background: rgba(255, 255, 255, 0.25);
+}
+
+.manual-link:hover {
+    background: #1f5be0;
 }
 
 .two-column-layout {
