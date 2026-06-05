@@ -1,4 +1,4 @@
-import { authorContact, deletableStatusTabs, getPromotionDisplayName, queryStatusTabs, tabNames } from './config.js';
+import { USER_MANUAL_URL, authorContact, deletableStatusTabs, getPromotionDisplayName, queryStatusTabs, tabNames } from './config.js';
 
 export const dom = {};
 
@@ -10,6 +10,7 @@ export function cacheDom() {
     dom.sellerId = document.getElementById('sellerId');
     dom.queryBtn = document.getElementById('queryBtn');
     dom.deleteBtn = document.getElementById('deleteBtn');
+    dom.userManualBtn = document.getElementById('userManualBtn');
     dom.checkUpdateBtn = document.getElementById('checkUpdateBtn');
     dom.contactAuthorBtn = document.getElementById('contactAuthorBtn');
     dom.toggleRightPanelBtn = document.getElementById('toggleRightPanelBtn');
@@ -50,6 +51,7 @@ export function renderShopInfo(state) {
 export function setupEventListeners(handlers) {
     dom.queryBtn.addEventListener('click', handlers.onQuery);
     dom.deleteBtn.addEventListener('click', handlers.onDelete);
+    dom.userManualBtn.addEventListener('click', openUserManual);
     dom.checkUpdateBtn.addEventListener('click', handlers.onCheckUpdate);
     dom.contactAuthorBtn.addEventListener('click', openAuthorChat);
     dom.toggleRightPanelBtn.addEventListener('click', toggleRightPanel);
@@ -65,6 +67,12 @@ export function setupEventListeners(handlers) {
 function openAuthorChat() {
     chrome.tabs.create({
         url: authorContact.chatUrl
+    });
+}
+
+function openUserManual() {
+    chrome.tabs.create({
+        url: USER_MANUAL_URL
     });
 }
 

@@ -14,6 +14,7 @@ export const promotionTypeNames = {
 };
 
 export const CHROME_WEB_STORE_URL = 'https://chromewebstore.google.com/detail/sellerx/mlienbhlbggdmbinchmkddnbjcffoked';
+export const USER_MANUAL_URL = 'https://bytedance.larkoffice.com/wiki/JQhMw1U0ciwroXkqryjc5fvFnKf';
 
 export const promotionFilterOptions = {
     1: { promotionType: 1, label: 'All Promotions' },
