@@ -10,7 +10,7 @@ export const promotionTypeNames = {
     9: 'Promo Code',
     10: 'Early Bird',
     11: 'SNS',
-    12: 'Creator LIVE deal'
+    12: 'Creator Exclusive Price'
 };
 
 export const CHROME_WEB_STORE_URL = 'https://chromewebstore.google.com/detail/sellerx/mlienbhlbggdmbinchmkddnbjcffoked';
@@ -29,6 +29,7 @@ export const promotionFilterOptions = {
     10: { promotionType: 10, displayType: 19, label: 'Early Bird' },
     11: { promotionType: 11, displayType: 20, label: 'SNS' },
     '5:16': { promotionType: 5, displayType: 16, label: 'Creator LIVE deal' },
+    '12:23': { promotionType: 12, displayType: 23, label: 'Creator Exclusive Price' },
     '7:25': { promotionType: 7, displayType: 25, label: 'Buy X Get Y' },
     '5:15': { promotionType: 5, displayType: 15, label: 'Live Flash Deal' },
     '2:9': { promotionType: 2, displayTypes: [9, 10], promotionTypeDetails: [4, 5], label: 'Live Voucher' },
@@ -62,6 +63,7 @@ export const displayTypeMap = {
     9: 17,
     10: 19,
     11: 20,
+    12: 23,
     17: 17
 };
 
@@ -88,7 +90,7 @@ export const promotionDisplayTypeNames = {
     20: 'SNS Product Discount',
     21: 'Seller Follow Voucher',
     22: 'Store Wide Free Shipping',
-    23: 'Creator Live Deal',
+    23: 'Creator Exclusive Price',
     24: 'Seller Review Voucher',
     25: 'Seller Buy X Get Y',
     26: 'Member Free Shipping'
