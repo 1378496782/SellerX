@@ -2,7 +2,7 @@
 
 SellerX 是一个 Chrome Extension，用于批量查询、管理和删除 TikTok Shop Seller Center 店铺中的促销活动。
 
-当前版本：`v1.1.4`
+当前版本：`v1.1.5`
 
 ## 主要功能
 
@@ -16,6 +16,14 @@ SellerX 是一个 Chrome Extension，用于批量查询、管理和删除 TikTok
 - 提供执行日志、删除结果汇总、成功/失败明细和一键复制结果。
 - 支持一键打开作者飞书聊天，便于反馈问题。
 - 支持 Chrome Web Store 安装和自动更新，同时保留 GitHub Releases 安装包作为备用方式。
+
+## v1.1.5 更新重点
+
+- 新增 `Creator Exclusive Price` / 达人专属价筛选，使用 `promotion_type=12` 与 `display_type=23` 精确识别。
+- 优化 `Live Voucher` 兼容性：同时支持 `display_type=9 / promotion_type_detail=4` 与 MX 等地区返回的 `display_type=10 / promotion_type_detail=5`。
+- 补齐更多业务券类型识别，包括 `Shop New User Voucher`、`Creator Voucher`、`Follow Voucher`、`Seller Review Voucher` 等。
+- 优化券类查询日志：未命中过滤条件时输出服务端返回类型分布，方便继续校准各国家/各业务线的枚举。
+- 优化 Chrome Web Store 安装后的更新说明与使用手册入口，用户可通过商店安装并自动更新。
 
 ## v1.1.4 更新重点
 
