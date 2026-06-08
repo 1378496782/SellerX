@@ -12,6 +12,7 @@ import { appState, clearPromotions, getEffectiveSellerId, setPromotions } from '
 
 const QUERY_PAGE_SIZE = 50;
 const MAX_QUERY_PAGES = 20;
+const DELETE_CONCURRENCY = 5;
 
 function buildCommonParams(countryCode, sellerId) {
     const { locale, language, timezone } = getLocaleConfig(countryCode);
@@ -318,56 +319,71 @@ export async function deletePromotions({ promotionFilter, log }) {
     const commonParams = buildCommonParams(countryCode, effectiveSellerId);
     const filterConfig = getPromotionFilterConfig(promotionFilter);
     const promotionType = filterConfig.promotionType;
-    const deleteResults = [];
+    const deleteResults = new Array(appState.allPromotions.length);
 
     log('');
     log('========================================');
     log('步骤2: 开始删除');
     log('========================================');
     log('待删除活动数: ' + appState.allPromotions.length);
+    log('删除并发数: ' + Math.min(DELETE_CONCURRENCY, appState.allPromotions.length));
     log('泳道 Header: ' + formatLaneHeadersForLog());
 
-    for (let index = 0; index < appState.allPromotions.length; index++) {
-        const promotion = appState.allPromotions[index];
-        const actualType = promotion.realPromotionType || promotionType;
+    let nextIndex = 0;
 
-        try {
-            const result = await deletePromotionRecord({
-                promotion,
-                promotionType,
-                baseDomain,
-                countryCode,
-                commonParams
-            });
-            deleteResults.push(result);
+    async function deleteNextPromotion() {
+        while (nextIndex < appState.allPromotions.length) {
+            const index = nextIndex;
+            nextIndex++;
 
-            if (result.success) {
-                log('  [' + (index + 1) + '/' + appState.allPromotions.length + '] 删除' + result.destroyType + ' ID: ' + promotion.id + ', 名称: ' + promotion.name + ' - 成功' + ', logid: ' + result.logId, 'success');
-            } else {
-                log('  [' + (index + 1) + '/' + appState.allPromotions.length + '] 删除' + result.destroyType + ' ID: ' + promotion.id + ', 名称: ' + promotion.name + ' - 失败: ' + result.error + ', logid: ' + result.logId, 'error');
+            const promotion = appState.allPromotions[index];
+            const actualType = promotion.realPromotionType || promotionType;
+
+            try {
+                const result = await deletePromotionRecord({
+                    promotion,
+                    promotionType,
+                    baseDomain,
+                    countryCode,
+                    commonParams
+                });
+                deleteResults[index] = result;
+
+                if (result.success) {
+                    log('  [' + (index + 1) + '/' + appState.allPromotions.length + '] 删除' + result.destroyType + ' ID: ' + promotion.id + ', 名称: ' + promotion.name + ' - 成功' + ', logid: ' + result.logId, 'success');
+                } else {
+                    log('  [' + (index + 1) + '/' + appState.allPromotions.length + '] 删除' + result.destroyType + ' ID: ' + promotion.id + ', 名称: ' + promotion.name + ' - 失败: ' + result.error + ', logid: ' + result.logId, 'error');
+                }
+            } catch (deleteError) {
+                let destroyType = '活动';
+                if (isVoucherType(actualType)) {
+                    destroyType = '券';
+                } else if (isPromoCodeType(actualType)) {
+                    destroyType = '促销码';
+                }
+
+                deleteResults[index] = {
+                    id: promotion.id,
+                    name: promotion.name,
+                    type: getPromotionDisplayName(promotion),
+                    destroyType,
+                    success: false,
+                    error: deleteError.message
+                };
+                log('  [' + (index + 1) + '/' + appState.allPromotions.length + '] 删除' + destroyType + ' ID: ' + promotion.id + ', 名称: ' + promotion.name + ' - 失败: ' + deleteError.message, 'error');
             }
-        } catch (deleteError) {
-            let destroyType = '活动';
-            if (isVoucherType(actualType)) {
-                destroyType = '券';
-            } else if (isPromoCodeType(actualType)) {
-                destroyType = '促销码';
-            }
-
-            deleteResults.push({
-                id: promotion.id,
-                name: promotion.name,
-                type: getPromotionDisplayName(promotion),
-                destroyType,
-                success: false,
-                error: deleteError.message
-            });
-            log('  [' + (index + 1) + '/' + appState.allPromotions.length + '] 删除' + destroyType + ' ID: ' + promotion.id + ', 名称: ' + promotion.name + ' - 失败: ' + deleteError.message, 'error');
         }
     }
 
-    const successCount = deleteResults.filter((result) => result.success).length;
-    const failCount = deleteResults.length - successCount;
+    const workers = Array.from(
+        { length: Math.min(DELETE_CONCURRENCY, appState.allPromotions.length) },
+        () => deleteNextPromotion()
+    );
+    await Promise.all(workers);
+
+    const orderedResults = deleteResults.filter(Boolean);
+    const successCount = orderedResults.filter((result) => result.success).length;
+    const failCount = orderedResults.length - successCount;
 
     log('');
     log('========================================');
@@ -376,7 +392,7 @@ export async function deletePromotions({ promotionFilter, log }) {
     log('成功: ' + successCount + ', 失败: ' + failCount);
 
     if (failCount > 0) {
-        const failedIds = deleteResults
+        const failedIds = orderedResults
             .filter((result) => !result.success)
             .map((result) => result.id || 'N/A')
             .join(', ');
@@ -384,7 +400,7 @@ export async function deletePromotions({ promotionFilter, log }) {
     }
 
     clearPromotions();
-    return deleteResults;
+    return orderedResults;
 }
 
 export async function deleteSinglePromotion({ promotion, promotionFilter, log }) {
