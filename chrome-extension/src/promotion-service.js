@@ -236,10 +236,16 @@ export async function queryPromotions({ promotionFilter, tabs, log }) {
     log('泳道 Header: ' + formatLaneHeadersForLog());
     log('当前国家: ' + countryCode);
     log('最终配置 - 国家: ' + countryCode + ', 域名: ' + baseDomain + ', oec_seller_id: ' + effectiveSellerId + ', seller_id: ' + effectiveSellerId);
+    log('查询 Tab 并发数: ' + tabs.length);
 
-    for (const tab of tabs) {
-        log('');
-        log('--- 查询 Tab ' + tab + ' (' + (tabNames[tab] || '未知') + ') ---');
+    async function queryTabPromotions(tab) {
+        const tabLogs = [];
+        const tabLog = (message, type) => {
+            tabLogs.push({ message, type });
+        };
+
+        tabLog('');
+        tabLog('--- 查询 Tab ' + tab + ' (' + (tabNames[tab] || '未知') + ') ---');
 
         const refererUrl = buildRefererUrl(baseDomain, countryCode, tab, promotionType);
         const headers = buildHeaders(baseDomain, countryCode, refererUrl);
@@ -256,14 +262,14 @@ export async function queryPromotions({ promotionFilter, tabs, log }) {
             });
 
             if (!response.success || (response.apiCode && response.apiCode !== 0)) {
-                log('列表请求失败: ' + describeResponseError(response), 'error');
-                log('x-tt-logid: ' + (response?.logId || 'N/A'), 'error');
+                tabLog('列表请求失败: ' + describeResponseError(response), 'error');
+                tabLog('x-tt-logid: ' + (response?.logId || 'N/A'), 'error');
                 break;
             }
 
             const pagePromotions = response.data.data?.promotions || [];
             pageCount++;
-            log('第 ' + (pageIndex + 1) + ' 页请求成功，返回 ' + pagePromotions.length + ' 个，x-tt-logid: ' + (response.logId || 'N/A'), 'success');
+            tabLog('第 ' + (pageIndex + 1) + ' 页请求成功，返回 ' + pagePromotions.length + ' 个，x-tt-logid: ' + (response.logId || 'N/A'), 'success');
             serverPromotions.push(...pagePromotions);
 
             if (pagePromotions.length < QUERY_PAGE_SIZE) {
@@ -279,19 +285,18 @@ export async function queryPromotions({ promotionFilter, tabs, log }) {
                 displayTypesDescription ? 'display_type in [' + displayTypesDescription + ']' : '',
                 promotionTypeDetailsDescription ? 'promotion_type_detail in [' + promotionTypeDetailsDescription + ']' : ''
             ].filter(Boolean).join(' 或 ');
-            log('Tab ' + tab + ' 共查询 ' + pageCount + ' 页，服务端返回 ' + serverPromotions.length + ' 个，按 ' + filterDescription + ' 过滤后 ' + promotions.length + ' 个促销活动:');
+            tabLog('Tab ' + tab + ' 共查询 ' + pageCount + ' 页，服务端返回 ' + serverPromotions.length + ' 个，按 ' + filterDescription + ' 过滤后 ' + promotions.length + ' 个促销活动:');
             if (promotions.length === 0) {
-                logPromotionTypeDistribution(serverPromotions, log);
+                logPromotionTypeDistribution(serverPromotions, tabLog);
             }
         } else {
-            log('Tab ' + tab + ' 共查询 ' + pageCount + ' 页，找到 ' + promotions.length + ' 个促销活动:');
+            tabLog('Tab ' + tab + ' 共查询 ' + pageCount + ' 页，找到 ' + promotions.length + ' 个促销活动:');
         }
 
         promotions.forEach((promotion, index) => {
             promotion.fromTab = tab;
             promotion.realPromotionType = promotion.promotion_type;
-            collectedPromotions.push(promotion);
-            log('  ' + (index + 1) + '. ID: ' + promotion.id +
+            tabLog('  ' + (index + 1) + '. ID: ' + promotion.id +
                 ', 名称: ' + (promotion.name || 'N/A') +
                 ', 状态: ' + (promotion.status || 'N/A') +
                 ', 类型: ' + getPromotionDisplayName(promotion) +
@@ -300,7 +305,21 @@ export async function queryPromotions({ promotionFilter, tabs, log }) {
                 ', promotion_type_detail: ' + (promotion.promotion_type_detail || 'N/A') +
                 ', Tab: ' + tab);
         });
+
+        return {
+            tab,
+            promotions,
+            logs: tabLogs
+        };
     }
+
+    const tabResults = await Promise.all(tabs.map((tab) => queryTabPromotions(tab)));
+    tabResults.forEach((result) => {
+        result.logs.forEach(({ message, type }) => {
+            log(message, type);
+        });
+        collectedPromotions.push(...result.promotions);
+    });
 
     setPromotions(collectedPromotions);
 
