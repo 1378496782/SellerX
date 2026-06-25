@@ -1,4 +1,5 @@
 import { USER_MANUAL_URL, authorContact, deletableStatusTabs, getPromotionDisplayName, queryStatusTabs, tabNames } from './config.js';
+import { setPersistentPanelSourceTab } from './api-client.js';
 
 export const dom = {};
 
@@ -15,6 +16,7 @@ export function cacheDom() {
     dom.sellerId = document.getElementById('sellerId');
     dom.queryBtn = document.getElementById('queryBtn');
     dom.deleteBtn = document.getElementById('deleteBtn');
+    dom.pinPanelBtn = document.getElementById('pinPanelBtn');
     dom.userManualBtn = document.getElementById('userManualBtn');
     dom.checkUpdateBtn = document.getElementById('checkUpdateBtn');
     dom.contactAuthorBtn = document.getElementById('contactAuthorBtn');
@@ -56,6 +58,7 @@ export function renderShopInfo(state) {
 export function setupEventListeners(handlers) {
     dom.queryBtn.addEventListener('click', handlers.onQuery);
     dom.deleteBtn.addEventListener('click', handlers.onDelete);
+    dom.pinPanelBtn.addEventListener('click', openPersistentPanel);
     dom.userManualBtn.addEventListener('click', openUserManual);
     dom.checkUpdateBtn.addEventListener('click', handlers.onCheckUpdate);
     dom.contactAuthorBtn.addEventListener('click', openAuthorChat);
@@ -82,6 +85,32 @@ function openUserManual() {
     chrome.tabs.create({
         url: USER_MANUAL_URL
     });
+}
+
+async function openPersistentPanel() {
+    let sourceTab = null;
+    try {
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        sourceTab = tab || null;
+        await setPersistentPanelSourceTab(sourceTab);
+
+        if (chrome.sidePanel && sourceTab?.windowId !== undefined) {
+            await chrome.sidePanel.open({ windowId: sourceTab.windowId });
+            window.close();
+            return;
+        }
+    } catch (error) {
+        console.warn('打开 Side Panel 失败，尝试独立窗口兜底:', error);
+    }
+
+    chrome.windows.create({
+        url: chrome.runtime.getURL('popup.html?mode=window'),
+        type: 'popup',
+        width: 1080,
+        height: 860,
+        focused: true
+    });
+    window.close();
 }
 
 export function toggleRightPanel() {

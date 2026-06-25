@@ -8,7 +8,8 @@
     "tabs",
     "activeTab",
     "storage",
-    "webRequest"
+    "webRequest",
+    "sidePanel"
   ],
   "host_permissions": [
     "https://*.tiktok.com/*",
@@ -29,6 +30,9 @@
   },
   "background": {
     "service_worker": "background.js"
+  },
+  "side_panel": {
+    "default_path": "popup.html"
   },
   "icons": {
     "16": "icons/icon16.png",
