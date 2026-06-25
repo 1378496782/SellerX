@@ -459,51 +459,124 @@ body.expanded {
     font-weight: 700;
 }
 
-.lane-input-row {
-    display: grid;
-    gap: 6px;
-}
-
-.form-group .lane-field {
-    display: grid;
-    grid-template-columns: 82px minmax(0, 1fr);
+.lane-header-actions {
+    display: flex;
     align-items: center;
     gap: 6px;
-    margin-bottom: 0;
-}
-
-.lane-field span {
     min-width: 0;
-    padding: 7px 8px;
-    border-radius: 6px;
-    background: #eef1f5;
-    color: #333;
-    font-size: 11px;
-    font-weight: 600;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
 }
 
-.lane-field input {
+.lane-add-btn {
+    width: 24px;
+    height: 24px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: #4b5563;
+    font-size: 22px;
+    line-height: 22px;
+    cursor: pointer;
+}
+
+.lane-add-btn:hover {
+    background: #eef2ff;
+    color: #2563eb;
+}
+
+.lane-header-list {
+    display: grid;
+    gap: 5px;
+}
+
+.lane-header-row {
+    display: grid;
+    grid-template-columns: 24px minmax(86px, 0.9fr) minmax(110px, 1.1fr) 22px;
+    align-items: center;
+    gap: 5px;
+}
+
+.lane-header-switch {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+}
+
+.lane-header-switch input {
+    display: none;
+}
+
+.lane-header-switch span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 5px;
+    background: #e5e7eb;
+    color: transparent;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.lane-header-switch input:checked + span {
+    background: #1a73e8;
+    color: #fff;
+}
+
+.lane-header-name,
+.lane-header-value {
     width: 100%;
     min-width: 0;
     padding: 7px 8px;
     border: 1px solid transparent;
     border-radius: 6px;
     background: #fff;
+    color: #333;
     font-size: 11px;
     outline: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-.lane-field input:focus {
+.lane-header-name {
+    background: #eef1f5;
+    font-weight: 700;
+}
+
+.lane-header-name:focus,
+.lane-header-value:focus {
     border-color: #60a5fa;
     box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.16);
 }
 
-.lane-field input::placeholder {
+.lane-header-name::placeholder,
+.lane-header-value::placeholder {
     color: #b8bec8;
     font-style: italic;
+}
+
+.lane-header-row.disabled .lane-header-name,
+.lane-header-row.disabled .lane-header-value {
+    color: #9ca3af;
+    opacity: 0.62;
+}
+
+.lane-header-delete {
+    width: 22px;
+    height: 22px;
+    border: none;
+    background: transparent;
+    color: #ef4444;
+    font-size: 22px;
+    line-height: 18px;
+    cursor: pointer;
+}
+
+.lane-header-delete:hover {
+    color: #b91c1c;
 }
 
 .lane-actions {
@@ -552,6 +625,11 @@ body.expanded {
     color: #1d4ed8;
 }
 
+.lane-status.custom {
+    background: #fef3c7;
+    color: #92400e;
+}
+
 .left-column.shrink .info-config-row {
     grid-template-columns: 92px minmax(0, 1fr);
     gap: 10px;
@@ -598,6 +676,22 @@ body.expanded {
     font-size: 12px;
     margin-bottom: 6px;
     padding-bottom: 5px;
+}
+
+.left-column.shrink .lane-header-row {
+    grid-template-columns: 22px minmax(72px, 0.9fr) minmax(88px, 1.1fr) 20px;
+    gap: 4px;
+}
+
+.left-column.shrink .lane-header-name,
+.left-column.shrink .lane-header-value {
+    padding: 6px 7px;
+    font-size: 10px;
+}
+
+.left-column.shrink .lane-header-delete {
+    width: 20px;
+    font-size: 20px;
 }
 
 .action-section {

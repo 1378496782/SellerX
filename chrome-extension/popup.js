@@ -22,7 +22,7 @@ async function init() {
 
         log('--- 获取泳道 Header（用于后续请求） ---', 'info');
         const laneResult = await getLaneHeaders(log);
-        renderLaneHeaders(laneResult.headers, laneResult.source);
+        renderLaneHeaders(laneResult.rows || laneResult.headers, laneResult.source);
 
         if (!appState.oecSellerId || !appState.countryCode) {
             log('--- 补充获取信息（API 未完全获取） ---', 'info');
@@ -175,8 +175,8 @@ async function deleteSinglePromotion(promotion, button) {
 }
 
 async function saveLaneHeaders() {
-    const headers = await saveManualLaneHeaders(getLaneHeaderInputValues(), log);
-    renderLaneHeaders(headers, '手动');
+    const result = await saveManualLaneHeaders(getLaneHeaderInputValues(), log);
+    renderLaneHeaders(result.rows || result.headers, '手动');
 }
 
 async function clearLaneHeaders() {

@@ -151,18 +151,12 @@
                             <div class="lane-panel">
                                 <div class="lane-panel-header">
                                     <span class="lane-panel-title">环境</span>
-                                    <span id="laneHeadersStatus" class="lane-status">Prod（线上）</span>
+                                    <div class="lane-header-actions">
+                                        <span id="laneHeadersStatus" class="lane-status">Prod（线上）</span>
+                                        <button id="addLaneHeaderBtn" type="button" class="lane-add-btn" title="新增请求头">+</button>
+                                    </div>
                                 </div>
-                                <div class="lane-input-row">
-                                    <label class="lane-field" for="laneEnvInput">
-                                        <span>x-tt-env</span>
-                                        <input id="laneEnvInput" type="text" placeholder="留空则使用 Prod">
-                                    </label>
-                                    <label class="lane-field" for="laneUsePpeInput">
-                                        <span>x-use-ppe</span>
-                                        <input id="laneUsePpeInput" type="text" placeholder="PPE 时填 1">
-                                    </label>
-                                </div>
+                                <div id="laneHeaderList" class="lane-header-list"></div>
                                 <div class="lane-actions">
                                     <button id="saveLaneHeadersBtn" type="button" class="mini-btn">保存</button>
                                     <button id="clearLaneHeadersBtn" type="button" class="mini-btn">清空</button>

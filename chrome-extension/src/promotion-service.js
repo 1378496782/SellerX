@@ -174,7 +174,13 @@ function describeResponseError(response) {
 function formatLaneHeadersForLog() {
     const laneHeaders = appState.laneHeaders || {};
     const entries = Object.entries(laneHeaders).filter(([, value]) => Boolean(value));
-    return entries.length ? 'PPE · ' + entries.map(([key, value]) => key + '=' + value).join(', ') : 'Prod（未使用泳道）';
+    if (!entries.length) {
+        return 'Prod（未使用自定义请求头）';
+    }
+
+    const hasPpeHeaders = entries.some(([key]) => ['x-tt-env', 'x-use-ppe'].includes(key.toLowerCase()));
+    const prefix = hasPpeHeaders ? 'PPE · ' : '自定义 Header · ';
+    return prefix + entries.map(([key, value]) => key + '=' + value).join(', ');
 }
 
 async function deletePromotionRecord({ promotion, promotionType, baseDomain, countryCode, commonParams }) {
@@ -233,7 +239,7 @@ export async function queryPromotions({ promotionFilter, tabs, log }) {
     log('查询的 Tab: ' + tabs.map((tab) => tab + ' (' + (tabNames[tab] || '未知') + ')').join(', '));
     log('是否为券类型: ' + (isVoucherType(promotionType) ? '是' : '否'));
     log('是否为促销码类型: ' + (isPromoCodeType(promotionType) ? '是' : '否'));
-    log('泳道 Header: ' + formatLaneHeadersForLog());
+    log('请求 Header: ' + formatLaneHeadersForLog());
     log('当前国家: ' + countryCode);
     log('最终配置 - 国家: ' + countryCode + ', 域名: ' + baseDomain + ', oec_seller_id: ' + effectiveSellerId + ', seller_id: ' + effectiveSellerId);
     log('查询 Tab 并发数: ' + tabs.length);
@@ -346,7 +352,7 @@ export async function deletePromotions({ promotionFilter, log }) {
     log('========================================');
     log('待删除活动数: ' + appState.allPromotions.length);
     log('删除并发数: ' + Math.min(DELETE_CONCURRENCY, appState.allPromotions.length));
-    log('泳道 Header: ' + formatLaneHeadersForLog());
+    log('请求 Header: ' + formatLaneHeadersForLog());
 
     let nextIndex = 0;
 
@@ -435,7 +441,7 @@ export async function deleteSinglePromotion({ promotion, promotionFilter, log })
     log('单条删除');
     log('========================================');
     log('待删除 ID: ' + promotion.id + ', 名称: ' + (promotion.name || 'N/A'));
-    log('泳道 Header: ' + formatLaneHeadersForLog());
+    log('请求 Header: ' + formatLaneHeadersForLog());
 
     try {
         const result = await deletePromotionRecord({

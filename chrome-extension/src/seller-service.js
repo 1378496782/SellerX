@@ -3,6 +3,10 @@ import { getCookiesByDomain, getCurrentTab, getStorageValues, removeStorageValue
 import { appState, setCookies, setLaneHeaders, setSellerInfo } from './state.js';
 
 const manualLaneHeadersStorageKey = 'manualLaneHeaders';
+const defaultLaneHeaderRows = [
+    { name: 'x-tt-env', value: '', enabled: true },
+    { name: 'x-use-ppe', value: '', enabled: true }
+];
 
 function buildCookieDomains(currentDomain) {
     if (!currentDomain) {
@@ -73,6 +77,73 @@ function applySellerApiData(data, log) {
         setSellerInfo({ countryCode: data.data.base_region });
         log('✓ 从 API 获取国家代码 (base_region): ' + data.data.base_region.toUpperCase(), 'success');
     }
+}
+
+function normalizeHeaderRows(rows) {
+    if (Array.isArray(rows)) {
+        return rows.map((row) => ({
+            name: String(row?.name || '').trim(),
+            value: String(row?.value || '').trim(),
+            enabled: row?.enabled !== false
+        })).filter((row) => row.name || row.value);
+    }
+
+    if (rows && typeof rows === 'object') {
+        return Object.entries(rows).map(([name, value]) => ({
+            name,
+            value: String(value || '').trim(),
+            enabled: true
+        })).filter((row) => row.name || row.value);
+    }
+
+    return [];
+}
+
+function getActiveHeadersFromRows(rows) {
+    return normalizeHeaderRows(rows).reduce((headers, row) => {
+        if (row.enabled && row.name && row.value) {
+            headers[row.name] = row.value;
+        }
+        return headers;
+    }, {});
+}
+
+function upsertHeaderRow(rows, name, value) {
+    if (!value) {
+        return rows;
+    }
+
+    const normalizedName = name.toLowerCase();
+    const index = rows.findIndex((row) => row.name.toLowerCase() === normalizedName);
+    if (index >= 0) {
+        rows[index] = {
+            ...rows[index],
+            name,
+            value
+        };
+        return rows;
+    }
+
+    return [
+        {
+            name,
+            value,
+            enabled: true
+        },
+        ...rows
+    ];
+}
+
+function mergeAutoAndManualHeaderRows(autoHeaders, manualRows) {
+    let rows = normalizeHeaderRows(manualRows);
+    if (!rows.length && Object.keys(autoHeaders).length > 0) {
+        rows = defaultLaneHeaderRows.map((row) => ({ ...row }));
+    }
+
+    rows = upsertHeaderRow(rows, 'x-use-ppe', autoHeaders['x-use-ppe']);
+    rows = upsertHeaderRow(rows, 'x-tt-env', autoHeaders['x-tt-env']);
+
+    return rows.length ? rows : defaultLaneHeaderRows;
 }
 
 export async function getSellerInfoFromApi(log) {
@@ -166,41 +237,45 @@ export async function getLaneHeaders(log) {
     });
     const laneHeaders = response?.headers || {};
     const stored = await getStorageValues([manualLaneHeadersStorageKey]);
-    const manualLaneHeaders = stored[manualLaneHeadersStorageKey] || {};
-    const effectiveLaneHeaders = Object.keys(laneHeaders).length > 0 ? laneHeaders : manualLaneHeaders;
+    const manualLaneHeaderRows = normalizeHeaderRows(stored[manualLaneHeadersStorageKey]);
+    const effectiveRows = mergeAutoAndManualHeaderRows(laneHeaders, manualLaneHeaderRows);
+    const effectiveLaneHeaders = getActiveHeadersFromRows(effectiveRows);
 
     setLaneHeaders(effectiveLaneHeaders);
 
     if (Object.keys(laneHeaders).length > 0) {
         const sourceLabel = response?.source ? '（' + response.source + '）' : '';
+        const customCount = manualLaneHeaderRows.filter((row) => row.name && !['x-tt-env', 'x-use-ppe'].includes(row.name.toLowerCase())).length;
         log('✓ 已自动捕获泳道 Header' + sourceLabel + ': ' + Object.entries(laneHeaders).map(([key, value]) => key + '=' + value).join(', '), 'success');
-    } else if (Object.keys(manualLaneHeaders).length > 0) {
-        log('✓ 使用手动配置的泳道 Header: ' + Object.entries(manualLaneHeaders).map(([key, value]) => key + '=' + value).join(', '), 'success');
+        if (customCount > 0) {
+            log('✓ 已合并手动配置的自定义请求头 ' + customCount + ' 个', 'success');
+        }
+    } else if (Object.keys(effectiveLaneHeaders).length > 0) {
+        log('✓ 使用手动配置的请求头: ' + Object.entries(effectiveLaneHeaders).map(([key, value]) => key + '=' + value).join(', '), 'success');
     } else {
         log('未自动捕获到泳道 Header，将按 Prod 请求。若 DevTools 能看到 X-Tt-Env / X-Use-Ppe，说明可能是其他扩展在最终发送前注入，SellerX 无法稳定读取，请手动填写一次。', 'warning');
     }
 
     return {
         headers: effectiveLaneHeaders,
-        source: Object.keys(laneHeaders).length > 0 ? '自动' : (Object.keys(manualLaneHeaders).length > 0 ? '手动' : '')
+        rows: effectiveRows,
+        source: Object.keys(laneHeaders).length > 0 ? '自动' : (Object.keys(effectiveLaneHeaders).length > 0 ? '手动' : '')
     };
 }
 
-export async function saveManualLaneHeaders(headers, log) {
-    const normalizedHeaders = {};
-    if (headers['x-tt-env']) {
-        normalizedHeaders['x-tt-env'] = headers['x-tt-env'];
-    }
-    if (headers['x-use-ppe']) {
-        normalizedHeaders['x-use-ppe'] = headers['x-use-ppe'];
-    }
+export async function saveManualLaneHeaders(rows, log) {
+    const normalizedRows = normalizeHeaderRows(rows);
+    const activeHeaders = getActiveHeadersFromRows(normalizedRows);
 
     await setStorageValues({
-        [manualLaneHeadersStorageKey]: normalizedHeaders
+        [manualLaneHeadersStorageKey]: normalizedRows
     });
-    setLaneHeaders(normalizedHeaders);
-    log('✓ 已保存手动泳道 Header: ' + (Object.entries(normalizedHeaders).map(([key, value]) => key + '=' + value).join(', ') || '空'), 'success');
-    return normalizedHeaders;
+    setLaneHeaders(activeHeaders);
+    log('✓ 已保存手动请求头: ' + (Object.entries(activeHeaders).map(([key, value]) => key + '=' + value).join(', ') || '空'), 'success');
+    return {
+        headers: activeHeaders,
+        rows: normalizedRows.length ? normalizedRows : defaultLaneHeaderRows
+    };
 }
 
 export async function clearManualLaneHeaders(log) {

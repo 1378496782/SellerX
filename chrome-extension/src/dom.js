@@ -2,6 +2,11 @@ import { USER_MANUAL_URL, authorContact, deletableStatusTabs, getPromotionDispla
 
 export const dom = {};
 
+const defaultLaneHeaderRows = [
+    { name: 'x-tt-env', value: '', enabled: true },
+    { name: 'x-use-ppe', value: '', enabled: true }
+];
+
 export function cacheDom() {
     dom.versionInfo = document.getElementById('versionInfo');
     dom.shopName = document.getElementById('shopName');
@@ -22,8 +27,8 @@ export function cacheDom() {
     dom.promotionList = document.getElementById('promotionList');
     dom.loading = document.getElementById('loading');
     dom.promotionType = document.getElementById('promotionType');
-    dom.laneEnvInput = document.getElementById('laneEnvInput');
-    dom.laneUsePpeInput = document.getElementById('laneUsePpeInput');
+    dom.laneHeaderList = document.getElementById('laneHeaderList');
+    dom.addLaneHeaderBtn = document.getElementById('addLaneHeaderBtn');
     dom.saveLaneHeadersBtn = document.getElementById('saveLaneHeadersBtn');
     dom.clearLaneHeadersBtn = document.getElementById('clearLaneHeadersBtn');
     dom.laneHeadersStatus = document.getElementById('laneHeadersStatus');
@@ -57,6 +62,9 @@ export function setupEventListeners(handlers) {
     dom.toggleRightPanelBtn.addEventListener('click', toggleRightPanel);
     dom.hideLogPanelBtn.addEventListener('click', toggleRightPanel);
     dom.promotionType.addEventListener('change', handlers.onFilterChange);
+    dom.addLaneHeaderBtn.addEventListener('click', () => addLaneHeaderRow({ name: '', value: '', enabled: true }));
+    dom.laneHeaderList.addEventListener('click', handleLaneHeaderListClick);
+    dom.laneHeaderList.addEventListener('change', handleLaneHeaderListChange);
     dom.saveLaneHeadersBtn.addEventListener('click', handlers.onSaveLaneHeaders);
     dom.clearLaneHeadersBtn.addEventListener('click', handlers.onClearLaneHeaders);
     document.querySelectorAll('#tabsGroup input[name="tab"]').forEach((input) => {
@@ -106,25 +114,144 @@ export function getSelectedPromotionFilter() {
     return dom.promotionType.value;
 }
 
-export function getLaneHeaderInputValues() {
-    return {
-        'x-tt-env': dom.laneEnvInput.value.trim(),
-        'x-use-ppe': dom.laneUsePpeInput.value.trim()
-    };
+function normalizeHeaderRows(rows) {
+    if (Array.isArray(rows)) {
+        return rows.map((row) => ({
+            name: String(row?.name || '').trim(),
+            value: String(row?.value || '').trim(),
+            enabled: row?.enabled !== false
+        }));
+    }
+
+    if (rows && typeof rows === 'object') {
+        return Object.entries(rows).map(([name, value]) => ({
+            name,
+            value: String(value || '').trim(),
+            enabled: true
+        }));
+    }
+
+    return [];
 }
 
-export function renderLaneHeaders(headers = {}, source = '') {
-    const env = headers['x-tt-env'] || '';
-    const usePpe = headers['x-use-ppe'] || '';
-    dom.laneEnvInput.value = env;
-    dom.laneUsePpeInput.value = usePpe;
+function getActiveHeadersFromRows(rows) {
+    return normalizeHeaderRows(rows).reduce((headers, row) => {
+        if (row.enabled && row.name && row.value) {
+            headers[row.name] = row.value;
+        }
+        return headers;
+    }, {});
+}
+
+function getHeaderValueIgnoreCase(headers, name) {
+    const targetName = name.toLowerCase();
+    const entry = Object.entries(headers).find(([key]) => key.toLowerCase() === targetName);
+    return entry ? entry[1] : '';
+}
+
+function createLaneHeaderRow(row = {}) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'lane-header-row';
+    if (row.enabled === false) {
+        wrapper.classList.add('disabled');
+    }
+
+    const switchLabel = document.createElement('label');
+    switchLabel.className = 'lane-header-switch';
+    switchLabel.title = '启用 / 停用该请求头';
+
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.className = 'lane-header-enabled';
+    checkbox.checked = row.enabled !== false;
+
+    const switchMark = document.createElement('span');
+    switchMark.textContent = '✓';
+
+    switchLabel.appendChild(checkbox);
+    switchLabel.appendChild(switchMark);
+
+    const nameInput = document.createElement('input');
+    nameInput.className = 'lane-header-name';
+    nameInput.type = 'text';
+    nameInput.value = row.name || '';
+    nameInput.placeholder = 'Header 名称';
+
+    const valueInput = document.createElement('input');
+    valueInput.className = 'lane-header-value';
+    valueInput.type = 'text';
+    valueInput.value = row.value || '';
+    valueInput.placeholder = 'Header 值';
+
+    const deleteButton = document.createElement('button');
+    deleteButton.type = 'button';
+    deleteButton.className = 'lane-header-delete';
+    deleteButton.title = '删除该请求头';
+    deleteButton.textContent = '×';
+
+    wrapper.appendChild(switchLabel);
+    wrapper.appendChild(nameInput);
+    wrapper.appendChild(valueInput);
+    wrapper.appendChild(deleteButton);
+
+    return wrapper;
+}
+
+function addLaneHeaderRow(row) {
+    dom.laneHeaderList.appendChild(createLaneHeaderRow(row));
+}
+
+function handleLaneHeaderListClick(event) {
+    const deleteButton = event.target.closest('.lane-header-delete');
+    if (!deleteButton) {
+        return;
+    }
+
+    deleteButton.closest('.lane-header-row')?.remove();
+    if (!dom.laneHeaderList.querySelector('.lane-header-row')) {
+        addLaneHeaderRow({ name: '', value: '', enabled: true });
+    }
+}
+
+function handleLaneHeaderListChange(event) {
+    if (!event.target.classList.contains('lane-header-enabled')) {
+        return;
+    }
+
+    const row = event.target.closest('.lane-header-row');
+    row?.classList.toggle('disabled', !event.target.checked);
+}
+
+export function getLaneHeaderInputValues() {
+    return Array.from(dom.laneHeaderList.querySelectorAll('.lane-header-row')).map((row) => ({
+        enabled: row.querySelector('.lane-header-enabled')?.checked !== false,
+        name: row.querySelector('.lane-header-name')?.value.trim() || '',
+        value: row.querySelector('.lane-header-value')?.value.trim() || ''
+    }));
+}
+
+export function renderLaneHeaders(headersOrRows = {}, source = '') {
+    const rows = normalizeHeaderRows(headersOrRows);
+    const visibleRows = rows.length ? rows : defaultLaneHeaderRows;
+    const activeHeaders = getActiveHeadersFromRows(visibleRows);
+    const env = getHeaderValueIgnoreCase(activeHeaders, 'x-tt-env');
+    const usePpe = getHeaderValueIgnoreCase(activeHeaders, 'x-use-ppe');
+    const hasActiveHeaders = Object.keys(activeHeaders).length > 0;
+
+    dom.laneHeaderList.innerHTML = '';
+    visibleRows.forEach(addLaneHeaderRow);
+
     dom.laneHeadersStatus.classList.toggle('ppe', Boolean(env || usePpe));
+    dom.laneHeadersStatus.classList.toggle('custom', hasActiveHeaders && !env && !usePpe);
 
     if (env || usePpe) {
         const sourceLabel = source ? source : '泳道';
         const detail = [env, usePpe].filter(Boolean).join(' / ');
         dom.laneHeadersStatus.textContent = 'PPE（' + sourceLabel + '）';
         dom.laneHeadersStatus.title = detail;
+    } else if (hasActiveHeaders) {
+        dom.laneHeadersStatus.textContent = '自定义 Header';
+        dom.laneHeadersStatus.title = Object.entries(activeHeaders).map(([key, value]) => key + '=' + value).join(', ');
     } else {
         dom.laneHeadersStatus.textContent = 'Prod（线上）';
         dom.laneHeadersStatus.title = '未使用泳道 Header';
