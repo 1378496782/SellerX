@@ -52,6 +52,22 @@ export async function setPersistentPanelSourceTab(tab) {
     });
 }
 
+export async function getPersistentPanelSourceTab() {
+    const stored = await getStorageValues([persistentPanelSourceTabKey]);
+    const source = stored[persistentPanelSourceTabKey] || {};
+    const tab = await getTabById(source.tabId);
+
+    if (!tab || isExtensionPage(tab)) {
+        return null;
+    }
+
+    return tab;
+}
+
+export async function clearPersistentPanelSourceTab() {
+    await removeStorageValues([persistentPanelSourceTabKey]);
+}
+
 export function getCookiesByDomain(domain) {
     return new Promise((resolve) => {
         chrome.cookies.getAll({ domain }, (cookies) => {

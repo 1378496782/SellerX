@@ -1,5 +1,5 @@
 import { USER_MANUAL_URL, authorContact, deletableStatusTabs, getPromotionDisplayName, queryStatusTabs, tabNames } from './config.js';
-import { setPersistentPanelSourceTab } from './api-client.js';
+import { clearPersistentPanelSourceTab, getPersistentPanelSourceTab, setPersistentPanelSourceTab } from './api-client.js';
 
 export const dom = {};
 
@@ -7,6 +7,14 @@ const defaultLaneHeaderRows = [
     { name: 'x-tt-env', value: '', enabled: true },
     { name: 'x-use-ppe', value: '', enabled: true }
 ];
+
+function getPanelMode() {
+    return new URLSearchParams(window.location.search).get('mode') || 'popup';
+}
+
+function isPersistentPanelMode() {
+    return ['sidepanel', 'window'].includes(getPanelMode());
+}
 
 export function cacheDom() {
     dom.versionInfo = document.getElementById('versionInfo');
@@ -34,6 +42,7 @@ export function cacheDom() {
     dom.saveLaneHeadersBtn = document.getElementById('saveLaneHeadersBtn');
     dom.clearLaneHeadersBtn = document.getElementById('clearLaneHeadersBtn');
     dom.laneHeadersStatus = document.getElementById('laneHeadersStatus');
+    renderPinPanelButton();
 }
 
 export function hideLogPanel() {
@@ -58,7 +67,7 @@ export function renderShopInfo(state) {
 export function setupEventListeners(handlers) {
     dom.queryBtn.addEventListener('click', handlers.onQuery);
     dom.deleteBtn.addEventListener('click', handlers.onDelete);
-    dom.pinPanelBtn.addEventListener('click', openPersistentPanel);
+    dom.pinPanelBtn.addEventListener('click', togglePersistentPanel);
     dom.userManualBtn.addEventListener('click', openUserManual);
     dom.checkUpdateBtn.addEventListener('click', handlers.onCheckUpdate);
     dom.contactAuthorBtn.addEventListener('click', openAuthorChat);
@@ -87,6 +96,22 @@ function openUserManual() {
     });
 }
 
+function renderPinPanelButton() {
+    const isPinned = isPersistentPanelMode();
+    dom.pinPanelBtn.dataset.tooltip = isPinned ? '取消固定' : '固定面板';
+    dom.pinPanelBtn.setAttribute('aria-label', isPinned ? '取消固定' : '固定面板');
+    dom.pinPanelBtn.classList.toggle('is-pinned', isPinned);
+}
+
+async function togglePersistentPanel() {
+    if (isPersistentPanelMode()) {
+        await closePersistentPanel();
+        return;
+    }
+
+    await openPersistentPanel();
+}
+
 async function openPersistentPanel() {
     let sourceTab = null;
     try {
@@ -95,6 +120,13 @@ async function openPersistentPanel() {
         await setPersistentPanelSourceTab(sourceTab);
 
         if (chrome.sidePanel && sourceTab?.windowId !== undefined) {
+            if (chrome.sidePanel.setOptions && sourceTab?.id !== undefined) {
+                await chrome.sidePanel.setOptions({
+                    tabId: sourceTab.id,
+                    path: 'popup.html?mode=sidepanel',
+                    enabled: true
+                });
+            }
             await chrome.sidePanel.open({ windowId: sourceTab.windowId });
             window.close();
             return;
@@ -110,6 +142,57 @@ async function openPersistentPanel() {
         height: 860,
         focused: true
     });
+    window.close();
+}
+
+async function closePersistentPanel() {
+    const sourceTab = await getPersistentPanelSourceTab();
+    if (sourceTab?.windowId !== undefined) {
+        try {
+            await chrome.windows.update(sourceTab.windowId, { focused: true });
+        } catch (error) {
+            console.warn('聚焦来源窗口失败:', error);
+        }
+    }
+
+    if (sourceTab?.id !== undefined) {
+        try {
+            await chrome.tabs.update(sourceTab.id, { active: true });
+        } catch (error) {
+            console.warn('激活来源 Tab 失败:', error);
+        }
+    }
+
+    if (chrome.action?.openPopup) {
+        try {
+            await chrome.action.openPopup();
+        } catch (error) {
+            console.warn('打开普通 Popup 失败，将只关闭固定面板:', error);
+        }
+    }
+
+    await clearPersistentPanelSourceTab();
+
+    if (getPanelMode() === 'sidepanel') {
+        if (chrome.sidePanel?.setOptions && sourceTab?.id !== undefined) {
+            try {
+                await chrome.sidePanel.setOptions({
+                    tabId: sourceTab.id,
+                    enabled: false
+                });
+            } catch (error) {
+                console.warn('取消 Side Panel 固定失败:', error);
+            }
+        }
+
+        try {
+            window.close();
+            return;
+        } catch (error) {
+            console.warn('关闭 Side Panel 失败:', error);
+        }
+    }
+
     window.close();
 }
 

@@ -151,6 +151,14 @@ body.expanded {
     background: #2563eb;
 }
 
+.pin-panel-link.is-pinned {
+    background: #2563eb;
+}
+
+.pin-panel-link.is-pinned:hover {
+    background: #1d4ed8;
+}
+
 .update-link.is-loading svg {
     animation: spin 0.8s linear infinite;
 }
